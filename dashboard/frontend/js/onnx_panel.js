@@ -18,12 +18,51 @@
    ========================================================================== */
 
 const OnnxPanel = {
+  UI_VERSION: 'v1.0.45',
+
   init() {
     this.cacheDOM();
     this.bindEvents();
-    this.refreshModels();
-    this.loadModelInfo();
-    this.fetchStatus();
+    this.showUiVersion();
+    this.installErrorSurfacer();
+    this.bootstrapWithRetry(0);
+  },
+
+  /* Shows the UI version on the page so a stale browser cache is instantly visible */
+  showUiVersion() {
+    const el = document.getElementById('onnxUiVersion');
+    if (el) el.textContent = `UI ${this.UI_VERSION}`;
+  },
+
+  /* Surface unexpected JS errors in the panel instead of failing silently */
+  installErrorSurfacer() {
+    window.addEventListener('error', (e) => {
+      if (e && e.message && this.errorBanner) {
+        this.showError(`Panel JS error: ${e.message}`);
+      }
+    });
+  },
+
+  /* Initial load with retries — survives page-open-before-server races */
+  async bootstrapWithRetry(attempt) {
+    try {
+      const res = await fetch('/api/onnx/models', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`backend HTTP ${res.status}`);
+      this.showError(null);
+      this._backendOk = true;
+      await this.refreshModels();
+      this.loadModelInfo();
+      this.fetchStatus();
+    } catch (e) {
+      this._backendOk = false;
+      if (this.modelDir) {
+        this.modelDir.textContent = 'Backend unreachable — start it: cd dashboard/backend && python main.py, then open http://localhost:8050';
+      }
+      this.showError(`Cannot reach backend (${e.message}). Restart the FastAPI server, then HARD-REFRESH this page (Ctrl+F5). Attempt ${attempt + 1}/4.`);
+      if (attempt < 3) {
+        setTimeout(() => this.bootstrapWithRetry(attempt + 1), 2500);
+      }
+    }
   },
 
   cacheDOM() {
@@ -79,7 +118,7 @@ const OnnxPanel = {
   /* Model Card: pull architecture / dataset / metrics / contract */
   async loadModelInfo() {
     try {
-      const res = await fetch('/api/onnx/info');
+      const res = await fetch('/api/onnx/info', { cache: 'no-store' });
       if (!res.ok) return;
       const info = await res.json();
       if (this.infoName) this.infoName.textContent = info.model_name || '(no model loaded)';
@@ -106,7 +145,7 @@ const OnnxPanel = {
 
   async refreshModels() {
     try {
-      const res = await fetch('/api/onnx/models');
+      const res = await fetch('/api/onnx/models', { cache: 'no-store' });
       const data = await res.json();
       if (this.modelDir) {
         this.modelDir.textContent = `Model directory: ${data.model_dir} (${(data.models || []).length} model(s))`;
@@ -142,7 +181,7 @@ const OnnxPanel = {
 
   async fetchStatus() {
     try {
-      const res = await fetch('/api/onnx/status');
+      const res = await fetch('/api/onnx/status', { cache: 'no-store' });
       if (res.ok) this.handleStatus(await res.json());
     } catch (e) { /* offline UI mode */ }
   },
