@@ -736,8 +736,14 @@
                   <button id="btnOnnxGraphClose" title="Close" style="font-family: var(--font-mono); font-size: 0.9rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-muted); cursor: pointer; padding: 4px 10px;">&#10005;</button>
                 </div>
               </div>
-              <!-- Netron viewer -->
-              <iframe id="onnxGraphFrame" style="flex: 1 1 auto; width: 100%; border: 0; background: #FFFFFF;" title="Netron model graph"></iframe>
+              <!-- Netron viewer (loading overlay sits on top until the viewer boots) -->
+              <div style="flex: 1 1 auto; position: relative; min-height: 0;">
+                <iframe id="onnxGraphFrame" style="width: 100%; height: 100%; border: 0; background: #FFFFFF;" title="Netron model graph"></iframe>
+                <div id="onnxGraphLoading" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: var(--bg-card, #FFFDF9); font-family: var(--font-mono); color: var(--text-muted); z-index: 2;">
+                  <div style="font-size: 0.9rem;">Starting the local Netron viewer for <span id="onnxGraphLoadingName" style="color: var(--accent-primary); font-weight: 700;">pickyv1.onnx</span> …</div>
+                  <div style="font-size: 0.72rem;">first start takes a few seconds (boots the viewer on localhost:8088)</div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -878,6 +884,6 @@
   <script src="js/servo_panel.js?v=1.0.42"></script>
   <script src="js/teleop_panel.js?v=1.0.42"></script>
   <script src="js/dataset_panel.js?v=1.0.43"></script>
-  <script src="js/onnx_panel.js?v=1.0.52"></script>
+  <script src="js/onnx_panel.js?v=1.0.53"></script>
 </body>
 </html>

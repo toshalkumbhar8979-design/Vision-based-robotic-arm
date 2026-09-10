@@ -18,7 +18,7 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.52',
+  UI_VERSION: 'v1.0.53',
   API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
@@ -120,6 +120,8 @@ const OnnxPanel = {
     this.graphModal = document.getElementById('onnxModelGraphModal');
     this.btnGraphClose = document.getElementById('btnOnnxGraphClose');
     this.graphFrame = document.getElementById('onnxGraphFrame');
+    this.graphLoading = document.getElementById('onnxGraphLoading');
+    this.graphLoadingName = document.getElementById('onnxGraphLoadingName');
     this.graphNewTab = document.getElementById('onnxGraphNewTab');
     this.graphModelName = document.getElementById('onnxGraphModelName');
     this.modelCardModal = document.getElementById('onnxModelCardModal');
@@ -187,11 +189,13 @@ const OnnxPanel = {
       return;
     }
     if (this.graphModelName) this.graphModelName.textContent = name;
-    // Show the window immediately with a loading hint, then boot the viewer.
+    if (this.graphLoadingName) this.graphLoadingName.textContent = name;
+    // Show the window with the loading overlay, then boot the viewer.
+    // NOTE: we never use iframe.srcdoc here — srcdoc takes precedence over src
+    // in all browsers, which previously froze the window on the loading text.
+    if (this.graphLoading) this.graphLoading.style.display = 'flex';
+    if (this.graphFrame) this.graphFrame.src = 'about:blank';
     this.graphModal.style.display = 'flex';
-    if (this.graphFrame) this.graphFrame.srcdoc =
-      '<div style="font-family: monospace; padding: 24px; color: #555;">Starting the local Netron viewer for ' +
-      name + ' …</div>';
     try {
       const res = await fetch(this.api('/api/onnx/graph/start'), {
         method: 'POST',
@@ -201,13 +205,23 @@ const OnnxPanel = {
       const data = await res.json();
       if (!res.ok) {
         this.showError(data.detail || `Graph viewer failed (HTTP ${res.status})`);
+        if (this.graphLoading) this.graphLoading.style.display = 'none';
         return;
       }
       this.showError(null);
-      if (this.graphFrame) this.graphFrame.src = data.url;   // http://localhost:8088
       if (this.graphNewTab) this.graphNewTab.href = data.url;
+      // Point the iframe at the local viewer, THEN hide the overlay.
+      if (this.graphFrame) {
+        this.graphFrame.src = data.url;   // http://localhost:8088
+        this.graphFrame.onload = () => {
+          if (this.graphLoading) this.graphLoading.style.display = 'none';
+        };
+      }
+      // Safety: hide the overlay after 6s even if onload misfires
+      setTimeout(() => { if (this.graphLoading) this.graphLoading.style.display = 'none'; }, 6000);
       App.log(`ONNX: Model Graph ready for ${name} (local Netron viewer).`);
     } catch (e) {
+      if (this.graphLoading) this.graphLoading.style.display = 'none';
       this.showError(`Could not start the local graph viewer: ${e.message}`);
     }
   },
