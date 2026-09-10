@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/journal", "destination": "/api/journal.js" },
+    { "source": "/(.*)", "destination": "/project_journal.html" }
+  ]
+}

@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PS5 Controller Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #FAF7F2;
+            color: #3D3529;
+            font-family: 'Source Sans 3', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2rem;
+            color: #3D3529;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: #A89F94;
+            margin-bottom: 32px;
+        }
+
+        /* Status Banner */
+        #status {
+            background: #F3EDE4;
+            border: 1px solid #E0D6C8;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.9rem;
+            margin-bottom: 32px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        #status.connected {
+            background: #EFF5F0;
+            border-color: #7A9E7E;
+            color: #4A6B4E;
+        }
+
+        #status.waiting {
+            color: #A89F94;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .dot.red { background: #B53A2E; }
+        .dot.green { background: #7A9E7E; }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .card {
+            background: #F3EDE4;
+            border: 1px solid #E0D6C8;
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .card h2 {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: #3D3529;
+        }
+
+        /* Joystick Visualization */
+        .stick-container {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .stick-wrapper {
+            text-align: center;
+        }
+
+        .stick-wrapper label {
+            display: block;
+            font-size: 0.8rem;
+            color: #A89F94;
+            margin-bottom: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .stick-pad {
+            width: 140px;
+            height: 140px;
+            background: #FAF7F2;
+            border: 2px solid #D4C9BA;
+            border-radius: 50%;
+            position: relative;
+        }
+
+        /* Crosshair lines */
+        .stick-pad::before,
+        .stick-pad::after {
+            content: '';
+            position: absolute;
+            background: #E0D6C8;
+        }
+        .stick-pad::before {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+        }
+        .stick-pad::after {
+            height: 1px;
+            width: 100%;
+            top: 50%;
+            left: 0;
+        }
+
+        .stick-dot {
+            width: 20px;
+            height: 20px;
+            background: #C4784A;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.05s linear;
+            box-shadow: 0 2px 8px rgba(196, 120, 74, 0.3);
+        }
+
+        .stick-values {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: #A89F94;
+            margin-top: 8px;
+        }
+
+        /* Trigger Bars */
+        .triggers {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+        }
+
+        .trigger-wrapper {
+            text-align: center;
+            flex: 1;
+        }
+
+        .trigger-wrapper label {
+            display: block;
+            font-size: 0.8rem;
+            color: #A89F94;
+            margin-bottom: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+        }
+
+        .trigger-bar-bg {
+            height: 16px;
+            background: #FAF7F2;
+            border: 1px solid #D4C9BA;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .trigger-bar-fill {
+            height: 100%;
+            background: #C4784A;
+            border-radius: 8px;
+            width: 0%;
+            transition: width 0.05s linear;
+        }
+
+        .trigger-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: #A89F94;
+            margin-top: 4px;
+        }
+
+        /* Buttons Grid */
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .btn-indicator {
+            background: #FAF7F2;
+            border: 1px solid #D4C9BA;
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.7rem;
+            color: #A89F94;
+            transition: all 0.1s ease;
+        }
+
+        .btn-indicator.pressed {
+            background: #C4784A;
+            border-color: #C4784A;
+            color: #FAF7F2;
+        }
+
+        /* Axes List */
+        .axes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .axis-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .axis-label {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: #A89F94;
+            width: 60px;
+            flex-shrink: 0;
+        }
+
+        .axis-bar-bg {
+            flex: 1;
+            height: 10px;
+            background: #FAF7F2;
+            border: 1px solid #D4C9BA;
+            border-radius: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .axis-bar-fill {
+            position: absolute;
+            height: 100%;
+            background: #C4784A;
+            border-radius: 5px;
+            transition: all 0.05s linear;
+        }
+
+        .axis-value {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 0.75rem;
+            color: #3D3529;
+            width: 50px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        /* Servo Mapping Card */
+        .servo-card {
+            grid-column: 1 / -1;
+        }
+
+        .servo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .servo-item {
+            background: #FAF7F2;
+            border: 1px solid #D4C9BA;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .servo-item label {
+            display: block;
+            font-size: 0.75rem;
+            color: #A89F94;
+            font-family: 'IBM Plex Mono', monospace;
+            margin-bottom: 4px;
+        }
+
+        .servo-item .angle {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 1.4rem;
+            font-weight: 500;
+            color: #C4784A;
+        }
+
+        .servo-item .angle-suffix {
+            font-size: 0.8rem;
+            color: #A89F94;
+        }
+
+        /* Info text */
+        .info {
+            margin-top: 32px;
+            max-width: 900px;
+            width: 100%;
+            background: #F3EDE4;
+            border: 1px solid #E0D6C8;
+            border-radius: 12px;
+            padding: 20px 24px;
+            font-size: 0.85rem;
+            color: #A89F94;
+            line-height: 1.6;
+        }
+
+        .info strong { color: #3D3529; }
+    </style>
+</head>
+<body>
+    <h1>PS5 Controller Proof of Concept</h1>
+    <p class="subtitle">Validating DualSense input via Browser Gamepad API</p>
+
+    <div id="status" class="waiting">
+        <span class="dot red" id="statusDot"></span>
+        <span id="statusText">Press any button on your PS5 controller to connect...</span>
+    </div>
+
+    <div class="grid">
+        <!-- Joysticks -->
+        <div class="card">
+            <h2>Analog Sticks</h2>
+            <div class="stick-container">
+                <div class="stick-wrapper">
+                    <label>Left Stick</label>
+                    <div class="stick-pad" id="leftPad">
+                        <div class="stick-dot" id="leftDot"></div>
+                    </div>
+                    <div class="stick-values" id="leftValues">X: 0.00 Y: 0.00</div>
+                </div>
+                <div class="stick-wrapper">
+                    <label>Right Stick</label>
+                    <div class="stick-pad" id="rightPad">
+                        <div class="stick-dot" id="rightDot"></div>
+                    </div>
+                    <div class="stick-values" id="rightValues">X: 0.00 Y: 0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Triggers -->
+        <div class="card">
+            <h2>Triggers & Bumpers</h2>
+            <div class="triggers" style="margin-bottom: 16px;">
+                <div class="trigger-wrapper">
+                    <label>L2 Trigger</label>
+                    <div class="trigger-bar-bg">
+                        <div class="trigger-bar-fill" id="l2Fill"></div>
+                    </div>
+                    <div class="trigger-value" id="l2Value">0%</div>
+                </div>
+                <div class="trigger-wrapper">
+                    <label>R2 Trigger</label>
+                    <div class="trigger-bar-bg">
+                        <div class="trigger-bar-fill" id="r2Fill"></div>
+                    </div>
+                    <div class="trigger-value" id="r2Value">0%</div>
+                </div>
+            </div>
+            <div class="triggers">
+                <div class="trigger-wrapper">
+                    <label>L1 Bumper</label>
+                    <div class="trigger-bar-bg">
+                        <div class="trigger-bar-fill" id="l1Fill"></div>
+                    </div>
+                    <div class="trigger-value" id="l1Value">0%</div>
+                </div>
+                <div class="trigger-wrapper">
+                    <label>R1 Bumper</label>
+                    <div class="trigger-bar-bg">
+                        <div class="trigger-bar-fill" id="r1Fill"></div>
+                    </div>
+                    <div class="trigger-value" id="r1Value">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="card">
+            <h2>Buttons</h2>
+            <div class="buttons-grid" id="buttonsGrid"></div>
+        </div>
+
+        <!-- Raw Axes -->
+        <div class="card">
+            <h2>Raw Axes</h2>
+            <div class="axes-list" id="axesList"></div>
+        </div>
+
+        <!-- Servo Mapping Preview -->
+        <div class="card servo-card">
+            <h2>Simulated Servo Mapping (Proof of Concept)</h2>
+            <p style="font-size: 0.8rem; color: #A89F94; margin-bottom: 16px;">
+                This shows how controller inputs would map to 6 servo angles (0°–180°).
+                This is a placeholder mapping — the real IK solver will replace this.
+            </p>
+            <div class="servo-grid">
+                <div class="servo-item">
+                    <label>Base (Ch 0)</label>
+                    <span class="angle" id="servo0">90</span><span class="angle-suffix">°</span>
+                </div>
+                <div class="servo-item">
+                    <label>Shoulder (Ch 1)</label>
+                    <span class="angle" id="servo1">90</span><span class="angle-suffix">°</span>
+                </div>
+                <div class="servo-item">
+                    <label>Elbow (Ch 2)</label>
+                    <span class="angle" id="servo2">90</span><span class="angle-suffix">°</span>
+                </div>
+                <div class="servo-item">
+                    <label>Wrist Pitch (Ch 3)</label>
+                    <span class="angle" id="servo3">90</span><span class="angle-suffix">°</span>
+                </div>
+                <div class="servo-item">
+                    <label>Wrist Roll (Ch 4)</label>
+                    <span class="angle" id="servo4">90</span><span class="angle-suffix">°</span>
+                </div>
+                <div class="servo-item">
+                    <label>Gripper (Ch 5)</label>
+                    <span class="angle" id="servo5">10</span><span class="angle-suffix">°</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info">
+        <strong>How to test:</strong> Connect your PS5 DualSense controller via USB or Bluetooth to your Mac.
+        Open this page in Chrome or Edge. Press any button on the controller — the browser will detect it
+        automatically via the Gamepad API. Move the sticks and triggers to see live input values.
+        <br><br>
+        <strong>What this proves:</strong> That we can read all PS5 controller inputs (sticks, triggers, buttons)
+        in real-time through a web browser with zero dependencies. The actual project will use a Python backend
+        (FastAPI + pygame/pyserial) to read the controller and send commands to the Arduino — but this confirms
+        the DualSense hardware works and is readable on your Mac.
+    </div>
+
+    <script>
+        // ====================================================================
+        // PS5 CONTROLLER PROOF OF CONCEPT
+        // Uses the browser Gamepad API to read DualSense inputs
+        // No dependencies. No installs. Just open in Chrome.
+        // ====================================================================
+
+        // DualSense button names in standard mapping order
+        const BUTTON_NAMES = [
+            'Cross (×)', 'Circle (○)', 'Square (□)', 'Triangle (△)',
+            'L1', 'R1', 'L2', 'R2',
+            'Share', 'Options', 'L3', 'R3',
+            'D-Pad ↑', 'D-Pad ↓', 'D-Pad ←', 'D-Pad →',
+            'PS', 'Touchpad'
+        ];
+
+        let gamepadIndex = null;
+
+        // Build button indicators on page load
+        function buildButtons() {
+            const grid = document.getElementById('buttonsGrid');
+            BUTTON_NAMES.forEach((name, i) => {
+                const div = document.createElement('div');
+                div.className = 'btn-indicator';
+                div.id = `btn${i}`;
+                div.textContent = name;
+                grid.appendChild(div);
+            });
+        }
+
+        // Listen for gamepad connection
+        window.addEventListener('gamepadconnected', (e) => {
+            gamepadIndex = e.gamepad.index;
+            const status = document.getElementById('status');
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+
+            status.className = 'connected';
+            dot.className = 'dot green';
+            text.textContent = `Connected: ${e.gamepad.id} (${e.gamepad.buttons.length} buttons, ${e.gamepad.axes.length} axes)`;
+
+            console.log('Gamepad connected:', e.gamepad.id);
+        });
+
+        window.addEventListener('gamepaddisconnected', (e) => {
+            if (e.gamepad.index === gamepadIndex) {
+                gamepadIndex = null;
+                const status = document.getElementById('status');
+                const dot = document.getElementById('statusDot');
+                const text = document.getElementById('statusText');
+
+                status.className = 'waiting';
+                dot.className = 'dot red';
+                text.textContent = 'Controller disconnected. Press any button to reconnect...';
+            }
+        });
+
+        // Apply deadzone to analog inputs (ignore tiny stick drift)
+        function applyDeadzone(value, deadzone = 0.08) {
+            return Math.abs(value) < deadzone ? 0 : value;
+        }
+
+        // Map a -1..1 value to a servo angle 0..180
+        function mapToServo(value, min = 0, max = 180) {
+            return Math.round(((value + 1) / 2) * (max - min) + min);
+        }
+
+        // Main update loop — runs at ~60fps via requestAnimationFrame
+        function update() {
+            if (gamepadIndex !== null) {
+                // Must re-query gamepads every frame (Chrome requirement)
+                const gp = navigator.getGamepads()[gamepadIndex];
+                if (gp) {
+                    updateSticks(gp);
+                    updateTriggers(gp);
+                    updateButtons(gp);
+                    updateAxes(gp);
+                    updateServoMapping(gp);
+                }
+            }
+            requestAnimationFrame(update);
+        }
+
+        function updateSticks(gp) {
+            // Left stick: axes[0] = X, axes[1] = Y
+            const lx = applyDeadzone(gp.axes[0] || 0);
+            const ly = applyDeadzone(gp.axes[1] || 0);
+            // Right stick: axes[2] = X, axes[3] = Y
+            const rx = applyDeadzone(gp.axes[2] || 0);
+            const ry = applyDeadzone(gp.axes[3] || 0);
+
+            // Move the dots within the circular pads
+            // Pad is 140px, dot is 20px, so max offset is 60px from center
+            const maxOffset = 55;
+            document.getElementById('leftDot').style.left = `calc(50% + ${lx * maxOffset}px)`;
+            document.getElementById('leftDot').style.top = `calc(50% + ${ly * maxOffset}px)`;
+            document.getElementById('rightDot').style.left = `calc(50% + ${rx * maxOffset}px)`;
+            document.getElementById('rightDot').style.top = `calc(50% + ${ry * maxOffset}px)`;
+
+            document.getElementById('leftValues').textContent = `X: ${lx.toFixed(2)}  Y: ${ly.toFixed(2)}`;
+            document.getElementById('rightValues').textContent = `X: ${rx.toFixed(2)}  Y: ${ry.toFixed(2)}`;
+        }
+
+        function updateTriggers(gp) {
+            // L2 = button 6, R2 = button 7 (analog value 0–1)
+            // L1 = button 4, R1 = button 5 (digital, but has .value)
+            const l2 = gp.buttons[6] ? gp.buttons[6].value : 0;
+            const r2 = gp.buttons[7] ? gp.buttons[7].value : 0;
+            const l1 = gp.buttons[4] ? gp.buttons[4].value : 0;
+            const r1 = gp.buttons[5] ? gp.buttons[5].value : 0;
+
+            document.getElementById('l2Fill').style.width = `${l2 * 100}%`;
+            document.getElementById('r2Fill').style.width = `${r2 * 100}%`;
+            document.getElementById('l1Fill').style.width = `${l1 * 100}%`;
+            document.getElementById('r1Fill').style.width = `${r1 * 100}%`;
+
+            document.getElementById('l2Value').textContent = `${Math.round(l2 * 100)}%`;
+            document.getElementById('r2Value').textContent = `${Math.round(r2 * 100)}%`;
+            document.getElementById('l1Value').textContent = `${Math.round(l1 * 100)}%`;
+            document.getElementById('r1Value').textContent = `${Math.round(r1 * 100)}%`;
+        }
+
+        function updateButtons(gp) {
+            for (let i = 0; i < Math.min(gp.buttons.length, BUTTON_NAMES.length); i++) {
+                const el = document.getElementById(`btn${i}`);
+                if (el) {
+                    el.className = gp.buttons[i].pressed ? 'btn-indicator pressed' : 'btn-indicator';
+                }
+            }
+        }
+
+        function updateAxes(gp) {
+            const container = document.getElementById('axesList');
+            // Only rebuild if axis count changed
+            if (container.children.length !== gp.axes.length) {
+                container.innerHTML = '';
+                for (let i = 0; i < gp.axes.length; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'axis-row';
+                    row.innerHTML = `
+                        <span class="axis-label">Axis ${i}</span>
+                        <div class="axis-bar-bg">
+                            <div class="axis-bar-fill" id="axisBar${i}"></div>
+                        </div>
+                        <span class="axis-value" id="axisVal${i}">0.00</span>
+                    `;
+                    container.appendChild(row);
+                }
+            }
+
+            // Update axis bars (map -1..1 to 0%..100%)
+            for (let i = 0; i < gp.axes.length; i++) {
+                const val = gp.axes[i];
+                const pct = ((val + 1) / 2) * 100;
+                const bar = document.getElementById(`axisBar${i}`);
+                const valEl = document.getElementById(`axisVal${i}`);
+                if (bar) {
+                    bar.style.left = val >= 0 ? '50%' : `${pct}%`;
+                    bar.style.width = `${Math.abs(val) * 50}%`;
+                }
+                if (valEl) valEl.textContent = val.toFixed(2);
+            }
+        }
+
+        function updateServoMapping(gp) {
+            // PLACEHOLDER direct joint mapping for proof of concept
+            // The real project will use Inverse Kinematics (Decision #4)
+            const lx = applyDeadzone(gp.axes[0] || 0);
+            const ly = applyDeadzone(gp.axes[1] || 0);
+            const rx = applyDeadzone(gp.axes[2] || 0);
+            const ry = applyDeadzone(gp.axes[3] || 0);
+            const l2 = gp.buttons[6] ? gp.buttons[6].value : 0;
+            const r2 = gp.buttons[7] ? gp.buttons[7].value : 0;
+
+            // Simple direct mapping (NOT IK — just for visualization)
+            document.getElementById('servo0').textContent = mapToServo(lx);       // Base
+            document.getElementById('servo1').textContent = mapToServo(-ly);       // Shoulder
+            document.getElementById('servo2').textContent = mapToServo(-ry);       // Elbow
+            document.getElementById('servo3').textContent = mapToServo(rx);        // Wrist Pitch
+            document.getElementById('servo4').textContent = mapToServo(l2, 0, 180); // Wrist Roll
+            document.getElementById('servo5').textContent = Math.round(r2 * 170 + 10); // Gripper (10-180)
+        }
+
+        // Initialize
+        buildButtons();
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>

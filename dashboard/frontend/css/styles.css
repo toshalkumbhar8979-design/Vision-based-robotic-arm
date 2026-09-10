@@ -1,0 +1,472 @@
+/* ==========================================================================
+   WARM LIGHT DESIGN SYSTEM — DASHBOARD STYLES
+   ==========================================================================
+   Project:  Vision-Based Autonomous Robotic Arm
+   File:     styles.css
+   Location: dashboard/frontend/css/
+
+   LOCKED DESIGN DECISIONS (from decisions.md & agent_bible.md):
+     - Decision #17: Responsive for Laptop & Tablet (min 768px width)
+     - Decision #18: Warm Light Mode (Cream/Linen/Sand). 
+       NO pure white (#FFFFFF), NO dark mode, NO neon/electric colors.
+       Fonts: DM Serif Display (headings), Source Sans 3 (body), IBM Plex Mono (data)
+     - Decision #19: Active Physical Assembly & Testing Tool
+   ========================================================================== */
+
+/* CSS Reset & Variables */
+:root {
+  /* Warm Background Palette */
+  --bg-page: #FAF7F2;          /* Warm Cream */
+  --bg-card: #F3EDE4;          /* Soft Linen */
+  --bg-card-hover: #EBE3D8;    /* Slightly deeper linen */
+  --bg-input: #FAF7F2;         /* Input background */
+  
+  /* Borders & Dividers */
+  --border-card: #E0D6C8;      /* Muted Sand */
+  --border-subtle: #D4C9BA;    /* Light Taupe */
+  
+  /* Typography Colors */
+  --text-main: #3D3529;        /* Warm Dark Charcoal */
+  --text-muted: #8C8275;       /* Muted Earthy Brown */
+  --text-light: #A89F94;       /* Soft Taupe */
+
+  /* Accent Colors */
+  --accent-primary: #C4784A;   /* Terracotta */
+  --accent-primary-hover: #B0693D;
+  --accent-success: #7A9E7E;   /* Sage Green */
+  --accent-success-bg: #EFF5F0;
+  --accent-warning: #D4A843;   /* Amber */
+  --accent-danger: #B53A2E;    /* Deep Brick Red */
+  --accent-danger-hover: #9E3025;
+  --accent-danger-bg: #FDF4F3;
+
+  /* Typography Families */
+  --font-serif: 'DM Serif Display', serif;
+  --font-sans: 'Source Sans 3', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Layout */
+  --sidebar-width: 240px;
+  --header-height: 70px;
+  --radius-card: 12px;
+  --radius-input: 8px;
+  --shadow-card: 0 4px 16px rgba(61, 53, 41, 0.04), 0 1px 3px rgba(61, 53, 41, 0.06);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  overflow-x: hidden;
+}
+
+/* --------------------------------------------------------------------------
+   Layout Structure
+   -------------------------------------------------------------------------- */
+.app-container {
+  display: flex;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+/* Sidebar Navigation */
+.sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border-card);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  flex-shrink: 0;
+}
+
+.sidebar-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+.sidebar-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.sidebar-subtitle {
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  margin-top: 4px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-input);
+  color: var(--text-muted);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: var(--bg-page);
+  color: var(--accent-primary);
+  border: 1px solid var(--border-card);
+  box-shadow: var(--shadow-card);
+}
+
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+
+/* Main Content Area */
+.main-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+/* Top Header Bar */
+.top-header {
+  height: var(--header-height);
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-card);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-family: var(--font-serif);
+  font-size: 1.4rem;
+  color: var(--text-main);
+}
+
+.header-status-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Status Pill */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-card);
+  color: var(--text-muted);
+  transition: all 0.3s ease;
+}
+
+.status-pill.connected {
+  background-color: var(--accent-success-bg);
+  border-color: var(--accent-success);
+  color: var(--accent-success);
+}
+
+.status-pill.estop {
+  background-color: var(--accent-danger-bg);
+  border-color: var(--accent-danger);
+  color: var(--accent-danger);
+  font-weight: bold;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--text-light);
+}
+
+.status-pill.connected .status-dot {
+  background-color: var(--accent-success);
+}
+
+.status-pill.estop .status-dot {
+  background-color: var(--accent-danger);
+}
+
+/* Content Panels */
+.content-panel {
+  padding: 32px;
+  display: none;
+}
+
+.content-panel.active {
+  display: block;
+}
+
+/* --------------------------------------------------------------------------
+   UI Components (Cards, Buttons, Inputs, Sliders)
+   -------------------------------------------------------------------------- */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+.card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+
+.card-subtitle {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-input);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background-color: var(--accent-primary);
+  color: #FAF7F2;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--bg-page);
+  border-color: var(--border-card);
+  color: var(--text-main);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-card-hover);
+}
+
+.btn-danger {
+  background-color: var(--accent-danger);
+  color: #FAF7F2;
+
+}
+
+.btn-danger:hover {
+  background-color: var(--accent-danger-hover);
+}
+
+.btn-estop-large {
+  width: 100%;
+  padding: 18px;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+  background-color: var(--accent-danger);
+  color: #FAF7F2;
+  border: none;
+  border-radius: var(--radius-card);
+  box-shadow: 0 4px 14px rgba(181, 58, 46, 0.25);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-estop-large:hover {
+  background-color: var(--accent-danger-hover);
+  transform: translateY(-1px);
+}
+
+.btn-estop-large:active {
+  transform: translateY(1px);
+}
+
+/* Servo Sliders Grid */
+.servo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .servo-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.servo-card {
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-input);
+  padding: 16px 20px;
+}
+
+.servo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.servo-label {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.servo-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.servo-value-display {
+  font-family: var(--font-mono);
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
+.servo-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Custom Range Slider */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: var(--border-card);
+  border-radius: 4px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  border: 2px solid var(--bg-page);
+  box-shadow: 0 2px 6px rgba(196, 120, 74, 0.3);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+/* Quick Action Toolbar */
+.action-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+/* Assembly Helper Banner (Decision #19) */
+.assembly-banner {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-left: 4px solid var(--accent-primary);
+  border-radius: var(--radius-card);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.assembly-banner strong {
+  color: var(--text-main);
+}
+
+/* Serial Log Monitor */
+.log-box {
+  background-color: var(--bg-page);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-input);
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-main);
+  height: 180px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  margin-bottom: 4px;
+}
+
+.log-time {
+  color: var(--text-light);
+  margin-right: 8px;
+}
+
+/* Responsive Support (Tablet & Laptop — Min 768px) */
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}

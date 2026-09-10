@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Official Printable ArUco Markers (DICT_4X4_50)</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 24px;
+      background: #faf7f2;
+      color: #2a2624;
+    }
+    h2 {
+      color: #c4784a;
+      margin-bottom: 6px;
+    }
+    .instructions {
+      background: #fff;
+      border: 1px solid #e0d6c8;
+      padding: 18px 24px;
+      border-radius: 10px;
+      margin-bottom: 28px;
+      max-width: 850px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .instructions ol {
+      margin: 10px 0 0 20px;
+      padding: 0;
+      line-height: 1.6;
+    }
+    .marker-grid {
+      display: flex;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .marker-card {
+      background: #fff;
+      border: 2px dashed #c4784a;
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+      width: 220px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .marker-img {
+      width: 4cm;
+      height: 4cm;
+      border: 1px solid #ddd;
+    }
+    .marker-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-top: 14px;
+      color: #2a2624;
+    }
+    .marker-dim {
+      font-family: monospace;
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 6px;
+    }
+    @media print {
+      body { background: #fff; margin: 0; padding: 10px; }
+      .instructions { border: 1px solid #ccc; box-shadow: none; }
+      .marker-card { border: 1px dashed #000; box-shadow: none; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <h2>Stage 1 Official ArUco Marker Print Sheet (DICT_4X4_50)</h2>
+  <div style="font-size: 0.9rem; color: #666; margin-bottom: 20px;">Mathematically Exact OpenCV Dictionary • Pre-scaled to 4cm × 4cm</div>
+  
+  <div class="instructions">
+    <strong style="color: #c4784a; font-size: 1rem;">Printing & Mounting Guide:</strong>
+    <ol>
+      <li>Click <strong>File &rarr; Print</strong> (or press <code>Cmd+P</code> / <code>Ctrl+P</code>).</li>
+      <li>In the Print Dialog, set <strong>Scale: 100% / Actual Size</strong> (do NOT fit to page).</li>
+      <li>Cut out each marker along the dashed outer border line.</li>
+      <li><strong style="color: #b02a2a;">CRITICAL STEP:</strong> Glue each cutout onto a flat piece of <strong>thin cardboard</strong> before sticking to the sponge cubes. Cardboard guarantees the marker stays 100% flat so vision detection works in variable lighting.</li>
+      <li>Attach <strong>Marker 0</strong> to Block 1, <strong>Marker 1</strong> to Block 2, and <strong>Marker 2</strong> to Target Box.</li>
+    </ol>
+  </div>
+
+  <div class="marker-grid">
+    <div class="marker-card">
+      <iframe src="aruco_id_0.svg" style="width: 4cm; height: 4cm; border: none; overflow: hidden;" scrolling="no"></iframe>
+      <div class="marker-title">Block 1 (Sponge Cube 1)</div>
+      <div class="marker-dim">ArUco ID: 0 (4cm × 4cm)</div>
+    </div>
+
+    <div class="marker-card">
+      <iframe src="aruco_id_1.svg" style="width: 4cm; height: 4cm; border: none; overflow: hidden;" scrolling="no"></iframe>
+      <div class="marker-title">Block 2 (Sponge Cube 2)</div>
+      <div class="marker-dim">ArUco ID: 1 (4cm × 4cm)</div>
+    </div>
+
+    <div class="marker-card">
+      <iframe src="aruco_id_2.svg" style="width: 4cm; height: 4cm; border: none; overflow: hidden;" scrolling="no"></iframe>
+      <div class="marker-title">Target Destination Box</div>
+      <div class="marker-dim">ArUco ID: 2 (4cm × 4cm)</div>
+    </div>
+  </div>
+</body>
+</html>

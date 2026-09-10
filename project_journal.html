@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Native iPhone Web App PWA Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Arm Journal">
+  <meta name="theme-color" content="#FAF7F2">
+
+  <!-- Apple Touch Icon & Favicon (Cache-Busted v=3) -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=3">
+  <link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=3">
+  <link rel="shortcut icon" href="apple-touch-icon.png?v=3">
+
+  <title>Robotic Arm Project Engineering Journal</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-page: #FAF7F2;
+      --bg-card: #FFFFFF;
+      --border-card: #E0D6C8;
+      --text-main: #2A2624;
+      --text-muted: #66605C;
+      --accent-primary: #C4784A;
+      --accent-danger: #D9534F;
+      --font-heading: 'DM Serif Display', Georgia, serif;
+      --font-body: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.7;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(40px, env(safe-area-inset-bottom));
+      padding-left: max(12px, env(safe-area-inset-left));
+      padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    .container {
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 2px solid var(--border-card);
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .header-text {
+      flex: 1;
+    }
+
+    .journal-title {
+      font-family: var(--font-heading);
+      font-size: 2rem;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+
+    .journal-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* Search Bar Box */
+    .search-box {
+      margin-bottom: 28px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-card);
+      border-radius: 12px;
+      padding: 14px 16px 14px 44px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(42, 38, 36, 0.02);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 12px rgba(196, 120, 74, 0.15);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    /* Journal Entry Card */
+    .journal-entry {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 28px;
+      box-shadow: 0 4px 12px rgba(42, 38, 36, 0.03);
+      position: relative;
+    }
+
+    .entry-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+
+    .entry-date {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color 0.15s ease, background 0.15s ease;
+    }
+
+    .delete-btn:hover, .delete-btn:active {
+      color: var(--accent-danger);
+      background: #FDF2F2;
+    }
+
+    mark.search-highlight {
+      background: rgba(196, 120, 74, 0.28);
+      color: #6A3212;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-weight: 600;
+      border: 1px solid rgba(196, 120, 74, 0.4);
+    }
+
+    .entry-title {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      line-height: 1.3;
+    }
+
+    .entry-content p {
+      margin-bottom: 14px;
+      font-size: 1rem;
+      color: #383330;
+    }
+
+    .entry-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* File Attachment Styling */
+    .attachment-box {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--border-card);
+    }
+
+    .attachment-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #F4EFE6;
+      border: 1px solid var(--border-card);
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 600;
+      transition: background 0.2s ease;
+    }
+
+    .attachment-badge:hover {
+      background: #EFE6D8;
+    }
+
+    .attachment-media-video {
+      width: 100%;
+      max-height: 380px;
+      border-radius: 10px;
+      margin-top: 12px;
+      background: #000;
+    }
+
+    .attachment-media-img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 12px;
+      border: 1px solid var(--border-card);
+    }
+
+    .btn {
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-family: var(--font-body);
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-secondary {
+      background: #EFE8DE;
+      color: var(--text-main);
+      border: 1px solid var(--border-card);
+    }
+
+    .btn:active {
+      opacity: 0.8;
+    }
+
+    /* Floating iPhone + Button */
+    .fab-btn {
+      position: fixed;
+      bottom: max(28px, env(safe-area-inset-bottom));
+      right: max(24px, env(safe-area-inset-right));
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      color: white;
+      border: none;
+      font-size: 2.2rem;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(196, 120, 74, 0.45);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.15s ease;
+    }
+
+    .fab-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(42, 38, 36, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    @media (min-width: 600px) {
+      .modal-overlay {
+        align-items: center;
+        padding: 20px;
+      }
+    }
+
+    .modal-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-width: 650px;
+      padding: 28px;
+      box-shadow: 0 -8px 32px rgba(0,0,0,0.15);
+      animation: slideUp 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    @media (min-width: 600px) {
+      .modal-card {
+        border-radius: 16px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+      }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: var(--text-main);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--bg-page);
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text-main);
+    }
+
+    .form-textarea {
+      height: 160px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      background: var(--bg-card);
+      border: 1px dashed var(--border-card);
+      border-radius: 14px;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .header-btns, .search-box, .fab-btn, .modal-overlay, .delete-btn { display: none !important; }
+      .journal-entry { border: 1px solid #ccc; box-shadow: none; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="header-text">
+        <h1 class="journal-title">Project Journal</h1>
+        <div class="journal-subtitle">Vision-Based Autonomous Pick-and-Place Robotic Arm</div>
+      </div>
+      <div class="header-btns">
+        <button class="btn" onclick="window.print()">Print / PDF</button>
+      </div>
+    </header>
+
+    <!-- Header Search Bar -->
+    <div class="search-box">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search..." style="padding-left: 16px;">
+    </div>
+
+    <main id="journalContainer">
+      <!-- Entries render dynamically -->
+    </main>
+  </div>
+
+  <!-- Floating iPhone + Button -->
+  <button class="fab-btn" id="btnOpenModal" title="Add Journal Entry">+</button>
+
+  <!-- Add Entry Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card">
+      <h2 class="modal-title">New Journal Entry</h2>
+      
+      <form id="journalForm">
+        <div class="form-group">
+          <label class="form-label">Auto-Detected Live Date</label>
+          <input type="text" class="form-input" id="inputDate" readonly style="font-family: var(--font-mono); color: var(--accent-primary); font-weight: 600;">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Header Title (Optional)</label>
+          <input type="text" class="form-input" id="inputTitle" placeholder="e.g. Physical Workspace Geometry & Dual-Frame Calibration Decision">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Journal Narrative Story</label>
+          <textarea class="form-textarea" id="inputText" placeholder="Write detailed session narrative..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Attach PDF, Word Doc, Photo, or Video (Optional)</label>
+          <input type="file" class="form-input" id="inputFile" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.gif,.webp,.mp4,.mov,.webm">
+          <div id="fileUploadStatus" style="font-size: 0.82rem; color: var(--accent-primary); margin-top: 6px; display: none;"></div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" id="btnCloseModal">Cancel</button>
+          <button type="submit" class="btn">Submit Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Initial Seed Journal Entries
+    const DEFAULT_ENTRIES = [
+      {
+        id: "entry-11",
+        date: "Friday, 07th August 2026",
+        title: "Physical Servo Hardware Assembly, Power Rail Debugging & Spaced Channel Protocol",
+        paragraphs: [
+          "In today's session, we commenced physical 6-DOF robotic arm hardware wiring and mechanical assembly on our 50cm x 50cm wooden platform board. We wired the Arduino Uno (VCC to 5V, GND to GND, A4 to SDA, A5 to SCL) to the PCA9685 16-channel PWM driver and connected external 5V/6V power. During initial testing of the Base Servo (Channel 0), we diagnosed a hardware power delivery issue where the PCA9685 onboard reverse-polarity protection MOSFET had high contact resistance. Bypassing the screw terminal by feeding battery positive (+) directly into the PCA9685 V+ pin header restored 100% full power to the servo rail.",
+          "To eliminate physical servo cable crowding on the PCA9685 board, we updated our control architecture and production Arduino firmware (robot_driver.ino) to use spaced even channels [Channels 0, 2, 4, 6, 8, 10]. We successfully mounted and tested the physical Base (Ch 0), Shoulder (Ch 2), and Elbow (Ch 4) joints, confirming smooth zero-jerk movement and precise slider responsiveness across all three assembled arm segments."
+        ]
+      },
+      {
+        id: "entry-10",
+        date: "Friday, 07th August 2026",
+        title: "Phase C Demonstration Dataset Recording Engine, 30Hz Trajectory Sampler & Smooth Replay Architecture",
+        paragraphs: [
+          "In today's session, we designed and deployed the Phase C Demonstration Dataset Recording and Trajectory Replay System on the Web Control Dashboard (http://localhost:8050) Dataset Management panel. The engine implements a real-time 30Hz trajectory sampler that records human teleoperation demonstration episodes into persistent time-series JSON arrays containing 6-joint angle vectors [θ1, θ2, θ3, θ4, θ5, θ6]. We implemented automatic smooth zero-jerk auto-homing upon stopping a recording session, ensuring the physical arm safely resets to Home Position while excluding post-task homing motions from the training dataset to maintain pure goal-directed demonstration data.",
+          "Furthermore, we built a comprehensive trajectory playback system allowing 1-click smooth demonstration replay across all 6 servos with live frame progress status and 6-joint telemetry overlays. We upgraded the PS5 teleoperation engine with state-machine gripper locking (L2 toggle / R2 continuous speed control) and applied a 5-degree/hard-limit endpoint threshold snap across all 6 servos to eliminate asymptotic low-pass filter rounding shortfalls. All demonstration datasets persist across backend server files (dataset_episodes.json) and client-side storage, fully locking our software and control architecture in preparation for physical 6-DOF arm wiring and assembly."
+        ]
+      },
+      {
+        id: "entry-9",
+        date: "Thursday, 06th August 2026",
+        title: "Cloud Storage Media Backend, Mismatched Key Normalization & Dual-Mode Teleoperation",
+        paragraphs: [
+          "In today's session, we completed a major infrastructure upgrade by transitioning our project journal backend to a full-featured cloud stack powered by Supabase PostgreSQL (journal_entries table) and Supabase Cloud Storage (journal-media public bucket). We resolved a critical PostgREST database issue where mismatched JSON keys across log entry arrays caused database upsert rejections. By implementing PostgREST key normalization, we established 100% reliable 0.1-second text and media sync across mobile PWAs, serverless Vercel APIs, and local control dashboards, complete with direct support for PDF documents, Word logbooks, high-resolution photos, and HTML5 video players.",
+          "Additionally, we upgraded the Web Control Dashboard (http://localhost:8050) Teleoperation panel by constructing a Dual-Mode Teleoperation Engine. The system now supports seamless 1-click toggling between Cartesian Inverse Kinematics (IK) Mode (allowing joystick translation in X, Y, Z space) and Direct Joint Motor Control Mode (allowing direct individual servo angle control for physical arm testing). With dual control modes, live PS5 controller input mapping, active status pills, and complete physical wiring specifications defined for the Arduino Uno, PCA9685 driver, external 5V/6V power supply, and 6 servos, all software and database systems are fully locked in preparation for tomorrow's physical hardware assembly and servo horn alignment."
+        ]
+      },
+      {
+        id: "entry-8",
+        date: "Thursday, 30th July 2026",
+        title: "Secondary Academic Logbook PDF Integration & Serial Device Filtering Decision",
+        paragraphs: [
+          "In today's session, we formally integrated the second official academic project logbook document (logbook2.pdf) into our capstone project repository. This document records our technical progress, software architecture updates, control dashboard testing, and upcoming hardware assembly tasks required for departmental review.",
+          "Additionally, we identified and resolved a critical macOS serial port communication issue where virtual Bluetooth audio devices (such as paired Bluetooth speakers and headphones) were appearing as openable serial ports on the Web Dashboard. We implemented strict backend keyword filtering to block virtual system ports and ensure the dashboard auto-detects and connects exclusively to genuine physical USB Arduino Uno hardware."
+        ],
+        attachment: {
+          name: "logbook2.pdf",
+          type: "pdf",
+          url: "logbook2.pdf"
+        }
+      },
+      {
+        id: "entry-7",
+        date: "Monday, 27th July 2026",
+        title: "Official Capstone Academic Logbook Integration & Departmental Review Document",
+        paragraphs: [
+          "In today's session, we formally integrated the official Department of Electrical and Electronics Engineering Project Logbook (Log Book-1.docx) into our capstone project repository. This document covers the initial academic project review period from July 20 to July 31, 2026, establishing the formal objectives, guide feedback channels, individual team contribution breakdowns, resource lists, and percentage completion tracking required for university milestone reviews.",
+          "The integrated logbook documents our software architecture foundation, hardware workspace preparation, Web Dashboard Phase A construction, and 2-way cloud database synchronization. With official academic reporting artifacts synced directly alongside our web control software, all team members can access and download the official capstone logbook file directly from the project journal interface."
+        ],
+        attachment: {
+          name: "Log Book-1.docx",
+          type: "docx",
+          url: "Log Book-1.docx"
+        }
+      },
+      {
+        id: "entry-6",
+        date: "Sunday, 26th July 2026",
+        title: "Media Payload Overhead, Cloud DB Limits & Text Logger Pivot Decision",
+        paragraphs: [
+          "During this session, we encountered significant technical friction and engineering overhead attempting to support heavy video clips and multi-device Base64 PDF attachment uploads. Initial integration attempts with third-party file uploaders resulted in unexpected browser ad redirects, broken mobile download links, and device availability failures. Furthermore, attempting to sync 1.5MB+ Base64 PDF DataURLs across cloud database APIs (jsonblob.com) triggered strict HTTP 413 Payload Too Large rejections, HTTP 429 Rate Limiting, and mobile Safari background fetch terminations that blocked form submission and caused cross-device sync inconsistencies between iPhone PWAs and laptop dashboards.",
+          "Recognizing that heavy binary media attachments introduced unnecessary complexity, cross-origin security risks, and severe cloud database performance bottlenecks, we made a definitive architectural pivot. We completely stripped all video and file upload inputs from the mobile PWA app and Web Dashboard, streamlining the system into a 100% clean, ultra-fast, zero-friction text logging engine. Essential project documents (such as the college synopsis PDF) will remain managed directly via code integration, while all future session notes will be logged as lightweight, instantly synchronized text entries. This decision restored 0.1-second cloud database sync speeds and eliminated all cross-device storage friction."
+        ]
+      },
+      {
+        id: "entry-5",
+        date: "Saturday, 25th July 2026",
+        title: "Interactive Journal App Upgrades, Cloud Sync & Session Finalization Decision",
+        paragraphs: [
+          "In today's session, we completed the interactive Web Journal PWA and local control dashboard integration. We implemented a real-time header search bar for filtering log entries, instant log entry deletion with cloud database sync, and serverless API integration deployed on Vercel (https://vision-autonomous-robotic-arm.vercel.app). We established a persistent 2-way cloud database sync (jsonblob.com API) so all text journal logs sync seamlessly in real-time across iPhone PWA devices, Laptop Safari, and the local Web Dashboard (http://localhost:8050).",
+          "To eliminate cross-device media storage overhead, we streamlined the mobile journal into a clean, ultra-fast text logging engine, reserving document attachments (such as the college synopsis PDF) to be managed directly via session code integration. With full web documentation, cloud sync, and dashboard software locked in place, we finalized Session 5 to transition our full technical focus to physical 6-DOF robotic arm hardware assembly."
+        ]
+      },
+      {
+        id: 'entry-4',
+        date: 'Friday, 24th July 2026',
+        title: 'Physical Workspace Geometry & Dual-Frame Calibration Decision',
+        paragraphs: [
+          'In this session, we finalized the physical workspace geometry and perception pipeline in preparation for hardware assembly. We established persistent REST endpoints for saving physical link measurements and servo zero offsets to a persistent configuration file. The Web Dashboard layout was further refined by placing the 3D Digital Twin tab in the final sidebar position, updating its sync status to "Standing By (Awaiting URDF)", and anonymizing all interface text to ensure a clean, presentation-ready capstone interface. Additionally, we added individual "Test Solo" diagnostic buttons to each servo card for single-joint assembly testing and configured Uvicorn live auto-reload on port 8050.',
+          'A major focus of this session was establishing the planned workspace coordinate blueprint for the 50cm x 50cm wooden platform (note that currently only the bare wooden board exists; no ArUco markers have been printed or attached yet). We finalized a dual-frame transformation architecture: ArUco Marker ID 2 will be placed at the corner of the platform near the overhead camera pole, establishing a rock-solid World Frame Origin (0,0). This design ensures that every point on the platform map has strictly positive coordinates (X, Y from 0 to 50cm) and prevents the robot arm from casting shadows over the calibration marker. The exact physical mounting position of the Robot Base on the board will be measured and registered in software once physical assembly and mounting is complete, allowing Python to convert vision coordinates into robot-centric vectors before executing Inverse Kinematics calculations. We also generated vector SVG ArUco markers, created a printable 4cm x 4cm HTML sheet, and compiled a step-by-step physical assembly guide.'
+        ]
+      },
+      {
+        id: 'entry-3',
+        date: 'Thursday, 23rd July 2026',
+        title: 'Web Dashboard Construction & Pre-Assembly Preparation Decision',
+        paragraphs: [
+          'This session focused on transforming the control software into a full-featured, web-based robotic dashboard to support the entire project lifecycle, starting with physical hardware assembly. Built with FastAPI, WebSockets, and a custom warm linen design system, the dashboard provides live joint sliders, zero-jerk S-curve automated routines, and automated serial port detection via the Arduino CLI tool. We integrated live PS5 DualSense controller teleoperation directly into the web browser via the Gamepad API and added a dedicated Kinematic Calibration panel to tune physical link lengths and servo zero offsets in real-time.',
+          'To support team integration, a dedicated top-level 3D Digital Twin tab was created to host the 3D URDF simulation model. We implemented individual "Test Solo" diagnostic buttons for single-joint physical assembly testing and generated vector SVG ArUco markers alongside a printable HTML sheet. Finally, we confirmed the Stage 1 environment design—keeping the destination box fixed while randomly placing the sponge block—to establish a clean, high-accuracy baseline before introducing multi-object complexity in Stage 2.'
+        ]
+      },
+      {
+        id: 'entry-2',
+        date: 'Thursday, 16th July 2026',
+        title: 'Capstone Documentation & Setup Visualizations Decision',
+        paragraphs: [
+          'During this session, attention shifted toward project documentation and presentation materials. We drafted comprehensive prompts for AI generation tools to produce a professional presentation slide deck for the college synopsis defense. Visual design specifications were defined for creating high-impact 3D render prompts depicting the complete dual-camera robotic workbench setup. The synopsis PDF was finalized and submitted to the university department, establishing a clear project schedule across the six-month development timeline.'
+        ],
+        attachment: {
+          name: 'robotic_arm_synopsis.pdf',
+          type: 'pdf',
+          url: 'robotic_arm_synopsis.pdf'
+        }
+      },
+      {
+        id: 'entry-1',
+        date: 'Monday, 06th July 2026',
+        title: 'Architecture Definition & Firmware Foundation Decision',
+        paragraphs: [
+          'The project began with a thorough architectural review of the 6-DOF robotic arm capstone project. We established the core hybrid perception and control strategy, deciding to isolate vision feature extraction using OpenCV before passing compact coordinate data into a neural network trained via Behavior Cloning. To ensure human teleoperation produces clean, natural motion, we agreed to implement Cartesian Inverse Kinematics driven by a PS5 DualSense controller rather than relying on direct joint manipulation. On the hardware front, we selected lightweight sponge cubes with cardboard-backed ArUco markers to prevent servo stall and eliminate surface warping under variable room lighting.',
+          'For safety and embedded control, we designed a dual-layer safety mechanism featuring a physical emergency stop switch alongside a 500ms serial watchdog on the Arduino Uno. Firmware scripts were developed for initial servo zeroing and production binary packet driver execution. Additionally, we resolved a key mechanical assembly strategy: rather than mounting joints strictly straight up at 90 degrees, we decided to mount hardware at physical midpoints to maximize workspace reach, allowing software joint offsets to handle the mathematical mapping seamlessly.'
+        ]
+      }
+    ];
+
+    function getOrdinalSuffix(day) {
+      if (day > 3 && day < 21) return 'th';
+      switch (day % 10) {
+        case 1:  return 'st';
+        case 2:  return 'nd';
+        case 3:  return 'rd';
+        default: return 'th';
+      }
+    }
+
+    function formatExactDate(d = new Date()) {
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      
+      const dayName = days[d.getDay()];
+      const dayNum = d.getDate();
+      const monthName = months[d.getMonth()];
+      const year = d.getFullYear();
+
+      const padDay = dayNum < 10 ? `0${dayNum}` : `${dayNum}`;
+      return `${dayName}, ${padDay}${getOrdinalSuffix(dayNum)} ${monthName} ${year}`;
+    }
+
+    function parseEntryTimestamp(entry) {
+      if (!entry) return 0;
+      let baseTs = 0;
+      if (entry.date) {
+        const cleanDate = entry.date.replace(/(\d+)(st|nd|rd|th)/, '$1');
+        const ts = Date.parse(cleanDate);
+        if (!isNaN(ts)) baseTs = ts;
+      }
+      if (entry.id && typeof entry.id === 'string' && entry.id.startsWith('entry-')) {
+        const num = parseInt(entry.id.replace('entry-', ''), 10);
+        if (!isNaN(num)) {
+          // Timestamp-based IDs (like entry-1786125467391) take absolute priority for real-time sorting
+          if (num > 1000000000000) return num;
+          return baseTs + num;
+        }
+      }
+      return baseTs;
+    }
+
+    function sortEntriesDatewise(entries) {
+      if (!Array.isArray(entries)) return [];
+      return [...entries].sort((a, b) => {
+        const tsA = parseEntryTimestamp(a);
+        const tsB = parseEntryTimestamp(b);
+        if (tsB !== tsA) return tsB - tsA;
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
+    }
+
+    function getStoredEntries() {
+      let result = DEFAULT_ENTRIES;
+      const saved = localStorage.getItem('robotic_arm_journal_entries');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) result = parsed;
+        } catch (e) {}
+      }
+      return sortEntriesDatewise(result);
+    }
+
+    const SUPABASE_URL = 'https://pzewxynfhrylnqbkkeeq.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_5OpuR0lsXoop77YXHtP01g_owDDLGe_';
+
+    async function syncBackendJournal() {
+      const targets = [
+        `${SUPABASE_URL}/rest/v1/journal_entries?select=*&order=created_at.desc`,
+        '/api/journal',
+        'dashboard/backend/journal_entries.json'
+      ];
+      for (const t of targets) {
+        try {
+          const isSupabase = t.includes('supabase.co');
+          const headers = isSupabase ? {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`
+          } : {};
+
+          const res = await fetch(t, { headers });
+          if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data) && data.length > 0) {
+              const map = new Map();
+              DEFAULT_ENTRIES.forEach(e => map.set(e.id, e));
+              getStoredEntries().forEach(e => map.set(e.id, e));
+              data.forEach(e => map.set(e.id, e));
+
+              const mergedSorted = sortEntriesDatewise(Array.from(map.values()));
+              const currentRaw = localStorage.getItem('robotic_arm_journal_entries');
+              if (currentRaw !== JSON.stringify(mergedSorted)) {
+                localStorage.setItem('robotic_arm_journal_entries', JSON.stringify(mergedSorted));
+                renderJournal();
+              }
+              break;
+            }
+          }
+        } catch (e) {}
+      }
+    }
+
+    async function deleteEntry(id) {
+      if (confirm("Are you sure you want to delete this journal entry?")) {
+        let entries = getStoredEntries();
+        entries = entries.filter(e => e.id !== id);
+        localStorage.setItem('robotic_arm_journal_entries', JSON.stringify(entries));
+        renderJournal();
+        
+        // Delete from Supabase REST API
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/journal_entries?id=eq.${id}`, {
+            method: 'DELETE',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`
+            }
+          });
+        } catch (e) {}
+
+        await saveEntries(entries);
+      }
+    }
+
+    async function saveEntries(entries) {
+      try {
+        localStorage.setItem('robotic_arm_journal_entries', JSON.stringify(entries));
+      } catch (err) {}
+
+      // Normalize array keys for Supabase PostgREST
+      const normalized = entries.map(item => ({
+        id: item.id,
+        date: item.date,
+        title: item.title,
+        paragraphs: item.paragraphs || [],
+        attachment: item.attachment || null
+      }));
+
+      // Upsert into Supabase REST API
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/journal_entries`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify(normalized)
+        });
+      } catch (e) {}
+
+      const targets = [
+        'https://vision-autonomous-robotic-arm.vercel.app/api/journal',
+        '/api/journal'
+      ];
+      for (const t of targets) {
+        try {
+          await fetch(t, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(normalized)
+          });
+          break;
+        } catch (e) {}
+      }
+    }
+
+    async function triggerDownloadAttachment(entryId, filename, defaultUrl) {
+      let targetUrl = defaultUrl || 'robotic_arm_synopsis.pdf';
+      try {
+        // Fetch blob for cross-origin Supabase / remote media URLs so browser triggers direct download
+        const res = await fetch(targetUrl);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename || 'media_file';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+      } catch (e) {
+        const a = document.createElement('a');
+        a.href = targetUrl;
+        a.download = filename || 'media_file';
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+    }
+
+    function renderAttachment(att, entryId) {
+      if (!att) return '';
+      let fileName = att.name || 'attachment';
+      let fileUrl = att.url || fileName;
+      let type = (att.type || '').toLowerCase();
+
+      const isImage = ['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(type) || 
+                      !!fileUrl.match(/\.(png|jpg|jpeg|gif|webp)$/i) ||
+                      (att.name && !!att.name.match(/\.(png|jpg|jpeg|gif|webp)$/i));
+
+      if (isImage) {
+        return `
+          <div class="attachment-box" style="margin-top: 12px;">
+            <img src="${fileUrl}" alt="${fileName}" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--border-card); max-height: 400px; object-fit: contain;">
+            <div style="margin-top: 8px;">
+              <button onclick="triggerDownloadAttachment('${entryId}', '${fileName}', '${fileUrl}')" class="attachment-badge" style="font-size: 0.8rem; padding: 6px 14px;">
+                ⬇️ Download Image: ${fileName}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      const isVideo = ['mp4', 'mov', 'webm', 'm4v', 'avi', 'mkv', '3gp', 'quicktime'].includes(type) || 
+                      !!fileUrl.match(/\.(mp4|mov|webm|m4v|avi|mkv|3gp)$/i) ||
+                      (att.name && !!att.name.match(/\.(mp4|mov|webm|m4v|avi|mkv|3gp)$/i));
+
+      if (isVideo) {
+        return `
+          <div class="attachment-box" style="margin-top: 12px;">
+            <video controls playsinline src="${fileUrl}" style="max-width: 100%; border-radius: 10px; border: 1px solid var(--border-card); max-height: 450px; background: #000; width: 100%;"></video>
+            <div style="margin-top: 8px;">
+              <button onclick="triggerDownloadAttachment('${entryId}', '${fileName}', '${fileUrl}')" class="attachment-badge" style="font-size: 0.8rem; padding: 6px 14px;">
+                ⬇️ Download Video: ${fileName}
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      let badgeText = `⬇️ View / Download Document: ${fileName}`;
+      if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+        badgeText = `⬇️ View / Download Word Logbook: ${fileName}`;
+      } else if (fileName.endsWith('.pdf')) {
+        badgeText = `⬇️ View / Download PDF Document: ${fileName}`;
+      }
+
+      return `
+        <div class="attachment-box">
+          <button onclick="triggerDownloadAttachment('${entryId}', '${fileName}', '${fileUrl}')" class="attachment-badge">
+            ${badgeText}
+          </button>
+        </div>
+      `;
+    }
+
+    function highlightText(text, query) {
+      if (!query || !text) return text;
+      const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`(${escapedQuery})`, 'gi');
+      return text.replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+
+    function renderJournal() {
+      const container = document.getElementById('journalContainer');
+      const entries = getStoredEntries();
+      const query = document.getElementById('searchInput').value.trim();
+      const queryLower = query.toLowerCase();
+
+      const filtered = entries.filter(item => {
+        if (!queryLower) return true;
+        const matchTitle = item.title.toLowerCase().includes(queryLower);
+        const matchDate = item.date.toLowerCase().includes(queryLower);
+        const matchContent = item.paragraphs.some(p => p.toLowerCase().includes(queryLower));
+        const matchAttachment = item.attachment && item.attachment.name.toLowerCase().includes(queryLower);
+        return matchTitle || matchDate || matchContent || matchAttachment;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="empty-state">No journal entries found matching "${query}"</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => `
+        <article class="journal-entry">
+          <div class="entry-header-row">
+            <div class="entry-date">${highlightText(item.date, query)}</div>
+            <button class="delete-btn" onclick="deleteEntry('${item.id}')" title="Delete Entry" style="font-size: 0.9rem; background: none; border: none; cursor: pointer;">🗑️</button>
+          </div>
+          <h2 class="entry-title">${highlightText(item.title, query)}</h2>
+          <div class="entry-content">
+            ${item.paragraphs.map(p => `<p>${highlightText(p, query)}</p>`).join('')}
+          </div>
+          ${renderAttachment(item.attachment, item.id)}
+        </article>
+      `).join('');
+    }
+
+    // Live Search Event Listener
+    document.getElementById('searchInput').addEventListener('input', renderJournal);
+
+    // Modal Control
+    const modalOverlay = document.getElementById('modalOverlay');
+    const btnOpenModal = document.getElementById('btnOpenModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const inputDate = document.getElementById('inputDate');
+    const journalForm = document.getElementById('journalForm');
+
+    btnOpenModal.addEventListener('click', () => {
+      inputDate.value = formatExactDate();
+      document.getElementById('inputTitle').value = '';
+      document.getElementById('inputText').value = '';
+      modalOverlay.style.display = 'flex';
+    });
+
+    btnCloseModal.addEventListener('click', () => {
+      modalOverlay.style.display = 'none';
+    });
+
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) modalOverlay.style.display = 'none';
+    });
+
+    async function compressVideoFile(file) {
+      if (!file || !file.type.startsWith('video/')) return file;
+      const sizeMB = file.size / (1024 * 1024);
+      if (sizeMB <= 15) return file; // Already small enough for direct upload
+
+      const statusDiv = document.getElementById('fileUploadStatus');
+      if (statusDiv) {
+        statusDiv.style.display = 'block';
+        statusDiv.textContent = `Optimizing ${sizeMB.toFixed(0)}MB video to <15MB web format... Please wait a moment.`;
+      }
+
+      return new Promise((resolve) => {
+        let isDone = false;
+        const cleanup = (result) => {
+          if (!isDone) {
+            isDone = true;
+            resolve(result);
+          }
+        };
+
+        try {
+          const video = document.createElement('video');
+          video.muted = true;
+          video.playsInline = true;
+          video.preload = 'auto';
+          const url = URL.createObjectURL(file);
+          video.src = url;
+
+          video.onloadedmetadata = () => {
+            let width = video.videoWidth || 1280;
+            let height = video.videoHeight || 720;
+            if (height > 720) {
+              width = Math.round((width * 720) / height);
+              height = 720;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            const stream = canvas.captureStream(30);
+            let mimeType = 'video/webm';
+            if (MediaRecorder.isTypeSupported('video/mp4')) mimeType = 'video/mp4';
+            else if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) mimeType = 'video/webm;codecs=vp8';
+
+            // Lower target bitrate to 1.0 Mbps for large >100MB source files
+            const targetBitrate = sizeMB > 100 ? 1000000 : 1500000;
+            const recorder = new MediaRecorder(stream, {
+              mimeType: mimeType,
+              videoBitsPerSecond: targetBitrate
+            });
+
+            const chunks = [];
+            recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+            recorder.onstop = () => {
+              URL.revokeObjectURL(url);
+              const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
+              const blob = new Blob(chunks, { type: mimeType });
+              const compressed = new File([blob], file.name.replace(/\.[^/.]+$/, '') + `_opt.${ext}`, { type: mimeType });
+              cleanup(compressed);
+            };
+
+            recorder.start();
+            try { video.playbackRate = 2.0; } catch (e) {}
+            video.currentTime = 0;
+            video.play().catch(() => cleanup(file));
+
+            function anim() {
+              if (video.paused || video.ended) {
+                if (recorder.state === 'recording') recorder.stop();
+                return;
+              }
+              ctx.drawImage(video, 0, 0, width, height);
+              requestAnimationFrame(anim);
+            }
+            anim();
+          };
+
+          video.onerror = () => {
+            URL.revokeObjectURL(url);
+            cleanup(file);
+          };
+
+          // 45-second timeout for loading heavy 285MB video metadata
+          setTimeout(() => {
+            if (!isDone && video.readyState < 2) {
+              console.warn('Video compression load timeout, proceeding with original...');
+              cleanup(file);
+            }
+          }, 45000);
+
+        } catch (err) {
+          cleanup(file);
+        }
+      });
+    }
+
+    // Handle Form Submit for Text & Media Log Entries (0.1s instant cloud sync)
+    journalForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const date = inputDate.value;
+      let title = document.getElementById('inputTitle').value.trim();
+      const rawText = document.getElementById('inputText').value.trim();
+      const fileInput = document.getElementById('inputFile');
+      const submitBtn = journalForm.querySelector('button[type="submit"]');
+
+      if (!title) {
+        title = 'Engineering Progress & Decision Updates';
+      }
+
+      const paragraphs = rawText.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Saving Entry & Uploading Media...';
+      }
+
+      let attachment = null;
+      if (fileInput && fileInput.files.length > 0) {
+        let file = fileInput.files[0];
+        
+        // Auto-compress large videos (>15MB) in browser for fast, reliable cloud uploads
+        if (file.type.startsWith('video/')) {
+          file = await compressVideoFile(file);
+        }
+
+        const statusDiv = document.getElementById('fileUploadStatus');
+        if (statusDiv) {
+          statusDiv.style.display = 'block';
+          statusDiv.textContent = `Uploading ${file.name} to Cloud Storage...`;
+        }
+
+        try {
+          const fileExt = file.name.split('.').pop().toLowerCase();
+          const cleanFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+          const uploadUrl = `${SUPABASE_URL}/storage/v1/object/journal-media/${cleanFileName}`;
+
+          // Direct Supabase Cloud Upload (100% Standalone PWA — Works when laptop is closed!)
+          const uploadRes = await fetch(uploadUrl, {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_KEY,
+              'Authorization': `Bearer ${SUPABASE_KEY}`,
+              'x-upsert': 'true',
+              'Content-Type': file.type || 'application/octet-stream'
+            },
+            body: file
+          });
+
+          if (uploadRes.ok) {
+            const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/journal-media/${cleanFileName}`;
+            attachment = {
+              name: file.name,
+              type: fileExt,
+              url: publicUrl
+            };
+          } else {
+            console.warn('Direct Supabase Storage returned non-OK, trying local fallback...');
+            try {
+              const formData = new FormData();
+              formData.append('file', file);
+              const apiRes = await fetch('/api/upload', { method: 'POST', body: formData });
+              if (apiRes.ok) {
+                const apiData = await apiRes.json();
+                if (apiData && apiData.url) {
+                  attachment = { name: file.name, type: fileExt, url: apiData.url };
+                }
+              }
+            } catch (fallbackErr) {}
+          }
+        } catch (uploadErr) {
+          console.warn('Media upload exception:', uploadErr);
+        }
+      }
+
+      const newEntry = {
+        id: `entry-${Date.now()}`,
+        date,
+        title,
+        paragraphs,
+        attachment
+      };
+
+      // Save single new entry directly to Supabase DB
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/journal_entries`, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_KEY,
+            'Authorization': `Bearer ${SUPABASE_KEY}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'resolution=merge-duplicates'
+          },
+          body: JSON.stringify([{
+            id: newEntry.id,
+            date: newEntry.date,
+            title: newEntry.title,
+            paragraphs: newEntry.paragraphs,
+            attachment: newEntry.attachment || null
+          }])
+        });
+      } catch (e) {}
+
+      const entries = getStoredEntries();
+      entries.unshift(newEntry);
+
+      await saveEntries(entries);
+      await syncBackendJournal();
+
+      if (fileInput) fileInput.value = '';
+      const statusDiv = document.getElementById('fileUploadStatus');
+      if (statusDiv) statusDiv.style.display = 'none';
+
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Entry';
+      }
+      modalOverlay.style.display = 'none';
+    });
+
+    // Auto-Sync when app is opened or brought to foreground
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        syncBackendJournal();
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      syncBackendJournal();
+    });
+
+    renderJournal();
+    syncBackendJournal();
+    setInterval(syncBackendJournal, 3000);
+  </script>
+</body>
+</html>

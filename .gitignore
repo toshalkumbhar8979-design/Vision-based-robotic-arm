@@ -1,0 +1,59 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Node (for any dashboard dev tools)
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Datasets (too large for git — use git-lfs or external storage)
+data/datasets/
+data/episodes/
+*.h5
+*.hdf5
+*.npz
+
+# Model checkpoints (too large for git)
+models/checkpoints/
+models/*.pt
+models/*.pth
+models/*.onnx
+
+# Logs
+*.log
+
+# Arduino build artifacts
+firmware/**/build/
+
+# Compiled binaries
+*.hex
+*.elf
+
+# Private instruction notes
+TOSHAL_INSTRUCTION.md
+
+# Session summary (local only — do not push)
+SESSION_SUMMARY.md
+
+# Exceptions: small training artifacts worth versioning (Dataset_30)
+!Dataset_30/master_dataset_all_episodes.npz
+!Dataset_30/train_log.txt

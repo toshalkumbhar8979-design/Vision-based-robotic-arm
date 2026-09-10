@@ -1,0 +1,143 @@
+[
+  {
+    "id": "entry-13",
+    "date": "Tuesday, 08th September 2026",
+    "title": "25cm × 30cm Workspace Grid Definition & Progressive 30/60/90 Demonstration Strategy",
+    "paragraphs": [
+      "In today's session, we verified live computer vision tracking of ArUco Tag ID 2 (World Origin) alongside ArUco Tag ID 0 (Block 1) on the live Camera 1 stream. The system successfully renders real-time coordinate axes (+X red, +Y green), a connecting vector line with distance in centimeters, and exact block rotation theta.",
+      "We established a 25cm x 30cm workspace grid (total area 750 cm²) positioned directly in front of the robotic arm on the 50cm x 50cm wooden platform. The workspace is divided into 30 sub-squares of 5cm x 5cm each (5 columns x 6 rows). We adopted an iterative evaluation protocol: collecting 30 demonstrations (1 per cell) for initial baseline training, expanding to 60 demonstrations to evaluate orientation invariance, and reaching 90 demonstrations (3 per cell) to achieve high convergence and accuracy before moving on to multi-block color/tag sorting."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-12",
+    "date": "Monday, 31st August 2026",
+    "title": "25cm × 25cm Workspace Definition & 75-Episode Demonstration Collection Strategy",
+    "paragraphs": [
+      "In today's session, we formally defined the Stage 1 workspace dimensions and demonstration collection protocol for our capstone imitation learning dataset. We established a strict 25cm x 25cm physical workspace grid (total area 625 cm²) on the platform board. To ensure dense spatial coverage and complete rotation invariance across the entire placement region, we adopted a 5x5 grid strategy (25 sub-squares of 5cm x 5cm each) with a target dataset volume of 75 demonstration episodes (3 clean human teleoperation demonstrations per cell across varying block approach angles and rotations).",
+      "Furthermore, we updated the Phase C Demonstration Dataset Recording Engine to record 5 primary joint angles [θ1, θ2, θ3, θ4, θ5] alongside binary gripper state (0 = OPEN, 1 = CLOSED), completely decoupling dataset trajectory logs from physical servo gear slip. We enhanced the dashboard Gripper state paradigm with dual-layer browser localStorage and backend kinematics configuration persistence, ensuring custom open and closed calibration angles stay preserved across reloads. The PS5 controller teleoperation loop was also upgraded with continuous velocity integration, eliminating Base motor lag and state conflict resets."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-11",
+    "date": "Friday, 07th August 2026",
+    "title": "Physical Servo Hardware Assembly, Power Rail Debugging & Spaced Channel Protocol",
+    "paragraphs": [
+      "In today's session, we commenced physical 6-DOF robotic arm hardware wiring and mechanical assembly on our 50cm x 50cm wooden platform board. We wired the Arduino Uno (VCC to 5V, GND to GND, A4 to SDA, A5 to SCL) to the PCA9685 16-channel PWM driver and connected external 5V/6V power. During initial testing of the Base Servo (Channel 0), we diagnosed a hardware power delivery issue where the PCA9685 onboard reverse-polarity protection MOSFET had high contact resistance. Bypassing the screw terminal by feeding battery positive (+) directly into the PCA9685 V+ pin header restored 100% full power to the servo rail.",
+      "To eliminate physical servo cable crowding on the PCA9685 board, we updated our control architecture and production Arduino firmware (robot_driver.ino) to use spaced even channels [Channels 0, 2, 4, 6, 8, 10]. We successfully mounted and tested the physical Base (Ch 0), Shoulder (Ch 2), and Elbow (Ch 4) joints, confirming smooth zero-jerk movement and precise slider responsiveness across all three assembled arm segments."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-10",
+    "date": "Friday, 07th August 2026",
+    "title": "Phase C Demonstration Dataset Recording Engine, 30Hz Trajectory Sampler & Smooth Replay Architecture",
+    "paragraphs": [
+      "In today's session, we designed and deployed the Phase C Demonstration Dataset Recording and Trajectory Replay System on the Web Control Dashboard (http://localhost:8050) Dataset Management panel. The engine implements a real-time 30Hz trajectory sampler that records human teleoperation demonstration episodes into persistent time-series JSON arrays containing 6-joint angle vectors [\u03b81, \u03b82, \u03b83, \u03b84, \u03b85, \u03b86]. We implemented automatic smooth zero-jerk auto-homing upon stopping a recording session, ensuring the physical arm safely resets to Home Position while excluding post-task homing motions from the training dataset to maintain pure goal-directed demonstration data.",
+      "Furthermore, we built a comprehensive trajectory playback system allowing 1-click smooth demonstration replay across all 6 servos with live frame progress status and 6-joint telemetry overlays. We upgraded the PS5 teleoperation engine with state-machine gripper locking (L2 toggle / R2 continuous speed control) and applied a 5-degree/hard-limit endpoint threshold snap across all 6 servos to eliminate asymptotic low-pass filter rounding shortfalls. All demonstration datasets persist across backend server files (dataset_episodes.json) and client-side storage, fully locking our software and control architecture in preparation for physical 6-DOF arm wiring and assembly."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-9",
+    "date": "Thursday, 06th August 2026",
+    "title": "Cloud Storage Media Backend, Mismatched Key Normalization & Dual-Mode Teleoperation",
+    "paragraphs": [
+      "In today's session, we completed a major infrastructure upgrade by transitioning our project journal backend to a full-featured cloud stack powered by Supabase PostgreSQL (journal_entries table) and Supabase Cloud Storage (journal-media public bucket). We resolved a critical PostgREST database issue where mismatched JSON keys across log entry arrays caused database upsert rejections. By implementing PostgREST key normalization, we established 100% reliable 0.1-second text and media sync across mobile PWAs, serverless Vercel APIs, and local control dashboards, complete with direct support for PDF documents, Word logbooks, high-resolution photos, and HTML5 video players.",
+      "Additionally, we upgraded the Web Control Dashboard (http://localhost:8050) Teleoperation panel by constructing a Dual-Mode Teleoperation Engine. The system now supports seamless 1-click toggling between Cartesian Inverse Kinematics (IK) Mode (allowing joystick translation in X, Y, Z space) and Direct Joint Motor Control Mode (allowing direct individual servo angle control for physical arm testing). With dual control modes, live PS5 controller input mapping, active status pills, and complete physical wiring specifications defined for the Arduino Uno, PCA9685 driver, external 5V/6V power supply, and 6 servos, all software and database systems are fully locked in preparation for tomorrow's physical hardware assembly and servo horn alignment."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-8",
+    "date": "Thursday, 30th July 2026",
+    "title": "Secondary Academic Logbook PDF Integration & Serial Device Filtering Decision",
+    "paragraphs": [
+      "In today's session, we formally integrated the second official academic project logbook document (logbook2.pdf) into our capstone project repository. This document records our technical progress, software architecture updates, control dashboard testing, and upcoming hardware assembly tasks required for departmental review.",
+      "Additionally, we identified and resolved a critical macOS serial port communication issue where virtual Bluetooth audio devices (such as paired Bluetooth speakers and headphones) were appearing as openable serial ports on the Web Dashboard. We implemented strict backend keyword filtering to block virtual system ports and ensure the dashboard auto-detects and connects exclusively to genuine physical USB Arduino Uno hardware."
+    ],
+    "attachment": {
+      "name": "logbook2.pdf",
+      "type": "pdf",
+      "url": "logbook2.pdf"
+    }
+  },
+  {
+    "id": "entry-7",
+    "date": "Monday, 27th July 2026",
+    "title": "Official Capstone Academic Logbook Integration & Departmental Review Document",
+    "paragraphs": [
+      "In today's session, we formally integrated the official Department of Electrical and Electronics Engineering Project Logbook (Log Book-1.docx) into our capstone project repository. This document covers the initial academic project review period from July 20 to July 31, 2026, establishing the formal objectives, guide feedback channels, individual team contribution breakdowns, resource lists, and percentage completion tracking required for university milestone reviews.",
+      "The integrated logbook documents our software architecture foundation, hardware workspace preparation, Web Dashboard Phase A construction, and 2-way cloud database synchronization. With official academic reporting artifacts synced directly alongside our web control software, all team members can access and download the official capstone logbook file directly from the project journal interface."
+    ],
+    "attachment": {
+      "name": "Log Book-1.docx",
+      "type": "docx",
+      "url": "Log Book-1.docx"
+    }
+  },
+  {
+    "id": "entry-6",
+    "date": "Sunday, 26th July 2026",
+    "title": "Media Payload Overhead, Cloud DB Limits & Text Logger Pivot Decision",
+    "paragraphs": [
+      "During this session, we encountered significant technical friction and engineering overhead attempting to support heavy video clips and multi-device Base64 PDF attachment uploads. Initial integration attempts with third-party file uploaders resulted in unexpected browser ad redirects, broken mobile download links, and device availability failures. Furthermore, attempting to sync 1.5MB+ Base64 PDF DataURLs across cloud database APIs (jsonblob.com) triggered strict HTTP 413 Payload Too Large rejections, HTTP 429 Rate Limiting, and mobile Safari background fetch terminations that blocked form submission and caused cross-device sync inconsistencies between iPhone PWAs and laptop dashboards.",
+      "Recognizing that heavy binary media attachments introduced unnecessary complexity, cross-origin security risks, and severe cloud database performance bottlenecks, we made a definitive architectural pivot. We completely stripped all video and file upload inputs from the mobile PWA app and Web Dashboard, streamlining the system into a 100% clean, ultra-fast, zero-friction text logging engine. Essential project documents (such as the college synopsis PDF) will remain managed directly via code integration, while all future session notes will be logged as lightweight, instantly synchronized text entries. This decision restored 0.1-second cloud database sync speeds and eliminated all cross-device storage friction."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-5",
+    "date": "Saturday, 25th July 2026",
+    "title": "Interactive Journal App Upgrades, Cloud Sync & Session Finalization Decision",
+    "paragraphs": [
+      "In today's session, we completed the interactive Web Journal PWA and local control dashboard integration. We implemented a real-time header search bar for filtering log entries, instant log entry deletion with cloud database sync, and serverless API integration deployed on Vercel (https://vision-autonomous-robotic-arm.vercel.app). We established a persistent 2-way cloud database sync (jsonblob.com API) so all text journal logs sync seamlessly in real-time across iPhone PWA devices, Laptop Safari, and the local Web Dashboard (http://localhost:8050).",
+      "To eliminate cross-device media storage overhead, we streamlined the mobile journal into a clean, ultra-fast text logging engine, reserving document attachments (such as the college synopsis PDF) to be managed directly via session code integration. With full web documentation, cloud sync, and dashboard software locked in place, we finalized Session 5 to transition our full technical focus to physical 6-DOF robotic arm hardware assembly."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-4",
+    "date": "Friday, 24th July 2026",
+    "title": "Physical Workspace Geometry & Dual-Frame Calibration Decision",
+    "paragraphs": [
+      "In this session, we finalized the physical workspace geometry and perception pipeline in preparation for hardware assembly. We established persistent REST endpoints for saving physical link measurements and servo zero offsets to a persistent configuration file. The Web Dashboard layout was further refined by placing the 3D Digital Twin tab in the final sidebar position, updating its sync status to \"Standing By (Awaiting URDF)\", and anonymizing all interface text to ensure a clean, presentation-ready capstone interface. Additionally, we added individual \"Test Solo\" diagnostic buttons to each servo card for single-joint assembly testing and configured Uvicorn live auto-reload on port 8050.",
+      "A major focus of this session was establishing the planned workspace coordinate blueprint for the 50cm x 50cm wooden platform (note that currently only the bare wooden board exists; no ArUco markers have been printed or attached yet). We finalized a dual-frame transformation architecture: ArUco Marker ID 2 will be placed at the corner of the platform near the overhead camera pole, establishing a rock-solid World Frame Origin (0,0). This design ensures that every point on the platform map has strictly positive coordinates (X, Y from 0 to 50cm) and prevents the robot arm from casting shadows over the calibration marker. The exact physical mounting position of the Robot Base on the board will be measured and registered in software once physical assembly and mounting is complete, allowing Python to convert vision coordinates into robot-centric vectors before executing Inverse Kinematics calculations. We also generated vector SVG ArUco markers, created a printable 4cm x 4cm HTML sheet, and compiled a step-by-step physical assembly guide."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-3",
+    "date": "Thursday, 23rd July 2026",
+    "title": "Web Dashboard Construction & Pre-Assembly Preparation Decision",
+    "paragraphs": [
+      "This session focused on transforming the control software into a full-featured, web-based robotic dashboard to support the entire project lifecycle, starting with physical hardware assembly. Built with FastAPI, WebSockets, and a custom warm linen design system, the dashboard provides live joint sliders, zero-jerk S-curve automated routines, and automated serial port detection via the Arduino CLI tool. We integrated live PS5 DualSense controller teleoperation directly into the web browser via the Gamepad API and added a dedicated Kinematic Calibration panel to tune physical link lengths and servo zero offsets in real-time.",
+      "To support team integration, a dedicated top-level 3D Digital Twin tab was created to host the 3D URDF simulation model. We implemented individual \"Test Solo\" diagnostic buttons for single-joint physical assembly testing and generated vector SVG ArUco markers alongside a printable HTML sheet. Finally, we confirmed the Stage 1 environment design\u2014keeping the destination box fixed while randomly placing the sponge block\u2014to establish a clean, high-accuracy baseline before introducing multi-object complexity in Stage 2."
+    ],
+    "attachment": null
+  },
+  {
+    "id": "entry-2",
+    "date": "Thursday, 16th July 2026",
+    "title": "Capstone Documentation & Setup Visualizations Decision",
+    "paragraphs": [
+      "During this session, attention shifted toward project documentation and presentation materials. We drafted comprehensive prompts for AI generation tools to produce a professional presentation slide deck for the college synopsis defense. Visual design specifications were defined for creating high-impact 3D render prompts depicting the complete dual-camera robotic workbench setup. The synopsis PDF was finalized and submitted to the university department, establishing a clear project schedule across the six-month development timeline."
+    ],
+    "attachment": {
+      "name": "robotic_arm_synopsis.pdf",
+      "type": "pdf",
+      "url": "robotic_arm_synopsis.pdf"
+    }
+  },
+  {
+    "id": "entry-1",
+    "date": "Monday, 06th July 2026",
+    "title": "Architecture Definition & Firmware Foundation Decision",
+    "paragraphs": [
+      "The project began with a thorough architectural review of the 6-DOF robotic arm capstone project. We established the core hybrid perception and control strategy, deciding to isolate vision feature extraction using OpenCV before passing compact coordinate data into a neural network trained via Behavior Cloning. To ensure human teleoperation produces clean, natural motion, we agreed to implement Cartesian Inverse Kinematics driven by a PS5 DualSense controller rather than relying on direct joint manipulation. On the hardware front, we selected lightweight sponge cubes with cardboard-backed ArUco markers to prevent servo stall and eliminate surface warping under variable room lighting.",
+      "For safety and embedded control, we designed a dual-layer safety mechanism featuring a physical emergency stop switch alongside a 500ms serial watchdog on the Arduino Uno. Firmware scripts were developed for initial servo zeroing and production binary packet driver execution. Additionally, we resolved a key mechanical assembly strategy: rather than mounting joints strictly straight up at 90 degrees, we decided to mount hardware at physical midpoints to maximize workspace reach, allowing software joint offsets to handle the mathematical mapping seamlessly."
+    ],
+    "attachment": null
+  }
+]
