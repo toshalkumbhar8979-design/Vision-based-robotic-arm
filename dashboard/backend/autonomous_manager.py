@@ -118,11 +118,19 @@ class AutonomousManager:
         return models
 
     def load_model(self, filename: str):
-        """Lazily creates the onnxruntime session for the chosen policy."""
+        """Lazily creates the onnxruntime session for the chosen policy.
+        Idempotent: loading the same model twice is a no-op success."""
+        filename = os.path.basename(str(filename or ""))
+        if not filename:
+            return False, "No model file specified."
+        if self.is_loaded and self.model_name == filename:
+            return True, f"Already loaded: {self.model_name}"
         import onnxruntime as ort
-        path = os.path.abspath(os.path.join(MODEL_DIR, os.path.basename(filename)))
+        path = os.path.abspath(os.path.join(MODEL_DIR, filename))
         if not path.startswith(MODEL_DIR) or not os.path.exists(path):
-            return False, f"Model '{filename}' not found in {MODEL_DIR}"
+            available = [m["name"] for m in self.list_models()]
+            return False, (f"Model '{filename}' not found in {MODEL_DIR}. "
+                           f"Available: {available or 'none'}")
         try:
             self.session = ort.InferenceSession(path, providers=["CPUExecutionProvider"])
             self.model_path = path

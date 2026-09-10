@@ -110,6 +110,24 @@ app.add_middleware(
 active_connections: List[WebSocket] = []
 
 
+@app.on_event("startup")
+async def startup_event():
+    """AUTO-LOAD the ONNX policy at server startup so the operator never has to
+    press Load manually (the 'model not loading' fix). Idempotent + safe: if no
+    model file exists it simply logs and continues."""
+    models = autonomous_manager.list_models()
+    if models and not autonomous_manager.is_loaded:
+        ok, msg = autonomous_manager.load_model(models[0]["name"])
+        logger.info(f"ONNX auto-load at startup: {msg}")
+        if ok and broadcast_status is not None:
+            try:
+                await broadcast_status()
+            except Exception:
+                pass
+    elif not models:
+        logger.warning("ONNX auto-load skipped: no .onnx models found in Dataset_30/models")
+
+
 # Request Models
 class ConnectRequest(BaseModel):
     port: str

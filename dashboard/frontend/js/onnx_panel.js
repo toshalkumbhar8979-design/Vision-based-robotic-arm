@@ -109,11 +109,11 @@ const OnnxPanel = {
       const res = await fetch('/api/onnx/models');
       const data = await res.json();
       if (this.modelDir) {
-        this.modelDir.textContent = `Model directory: ${data.model_dir} (${data.models.length} model(s))`;
+        this.modelDir.textContent = `Model directory: ${data.model_dir} (${(data.models || []).length} model(s))`;
       }
       if (this.modelSelect) {
         this.modelSelect.innerHTML = '';
-        if (data.models.length === 0) {
+        if (!data.models || data.models.length === 0) {
           this.modelSelect.innerHTML = '<option value="">No .onnx models found in Dataset_30/models</option>';
         } else {
           data.models.forEach(m => {
@@ -126,6 +126,14 @@ const OnnxPanel = {
         }
       }
       this.updateControls(!!data.loaded, data.loaded_model);
+      // AUTO-LOAD fallback: if the server has models but none loaded (e.g. the
+      // browser panel was opened against an older server), load the first one
+      // automatically so the model "just works" without a manual click.
+      if (!data.loaded && data.models && data.models.length > 0 && !this._autoLoadTried) {
+        this._autoLoadTried = true;
+        App.log('ONNX: No model loaded yet — auto-loading available policy...');
+        this.loadSelectedModel();
+      }
     } catch (e) {
       console.warn('Could not list ONNX models:', e);
       if (this.modelDir) this.modelDir.textContent = 'Backend unreachable — is the FastAPI server running?';
@@ -152,18 +160,22 @@ const OnnxPanel = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: name })
       });
-      const data = await res.json();
+      let data = {};
+      try { data = await res.json(); } catch (e) { /* non-JSON error page */ }
       if (res.ok) {
-        App.log(`ONNX: ${data.message}`);
-        this.setStatusPill(true, data.model);
+        App.log(`ONNX: ${data.message || 'Model loaded.'}`);
+        this.setStatusPill(true, data.model || name);
+        this.showError(null);
       } else {
-        App.log(`ONNX load failed: ${data.detail || 'unknown error'}`);
-        this.showError(data.detail || 'Model load failed');
+        const detail = data.detail || `HTTP ${res.status} ${res.statusText}`;
+        App.log(`ONNX load failed: ${detail}`);
+        this.showError(detail);
       }
       this.refreshModels();
       this.loadModelInfo();
     } catch (e) {
-      App.log(`ONNX load error: ${e.message}`);
+      App.log(`ONNX load error: ${e.message} (check the FastAPI server console)`);
+      this.showError(e.message);
     }
   },
 
