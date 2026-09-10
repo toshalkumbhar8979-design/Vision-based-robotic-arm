@@ -18,7 +18,8 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.45',
+  UI_VERSION: 'v1.0.46',
+  API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
     this.cacheDOM();
@@ -26,6 +27,13 @@ const OnnxPanel = {
     this.showUiVersion();
     this.installErrorSurfacer();
     this.bootstrapWithRetry(0);
+  },
+
+  /* Prefix helper: all API calls go through this so the panel can follow the
+     real backend even when the page itself is served by something else
+     (e.g. VS Code Live Server on :5500, or opened as a file). */
+  api(path) {
+    return this.API_BASE + path;
   },
 
   /* Shows the UI version on the page so a stale browser cache is instantly visible */
@@ -43,25 +51,56 @@ const OnnxPanel = {
     });
   },
 
+  /* Finds a server that actually has the /api/onnx routes.
+     Tries: same origin -> localhost:8050 -> 127.0.0.1:8050 */
+  async probeBackends() {
+    const candidates = ['', 'http://localhost:8050', 'http://127.0.0.1:8050'];
+    let saw404 = null;
+    for (const base of candidates) {
+      try {
+        const res = await fetch(base + '/api/onnx/models', { cache: 'no-store' });
+        if (res.ok) {
+          this.API_BASE = base;
+          return { ok: true, base };
+        }
+        if (res.status === 404) saw404 = base || location.origin;
+      } catch (e) { /* unreachable, try next */ }
+    }
+    return { ok: false, saw404 };
+  },
+
   /* Initial load with retries — survives page-open-before-server races */
   async bootstrapWithRetry(attempt) {
-    try {
-      const res = await fetch('/api/onnx/models', { cache: 'no-store' });
-      if (!res.ok) throw new Error(`backend HTTP ${res.status}`);
+    const probe = await this.probeBackends();
+    if (probe.ok) {
       this.showError(null);
-      this._backendOk = true;
       await this.refreshModels();
       this.loadModelInfo();
       this.fetchStatus();
-    } catch (e) {
-      this._backendOk = false;
-      if (this.modelDir) {
-        this.modelDir.textContent = 'Backend unreachable — start it: cd dashboard/backend && python main.py, then open http://localhost:8050';
-      }
-      this.showError(`Cannot reach backend (${e.message}). Restart the FastAPI server, then HARD-REFRESH this page (Ctrl+F5). Attempt ${attempt + 1}/4.`);
-      if (attempt < 3) {
-        setTimeout(() => this.bootstrapWithRetry(attempt + 1), 2500);
-      }
+      return;
+    }
+
+    const wrongOrigin = location.protocol === 'file:' ||
+                        (location.port && location.port !== '8050');
+    let msg;
+    if (probe.saw404) {
+      msg = `The page origin (${probe.saw404}) has NO /api/onnx backend. ` +
+            'The API lives on the FastAPI server. Open http://localhost:8050 directly.';
+    } else if (wrongOrigin) {
+      msg = `You opened the dashboard from "${location.origin || 'file://'}". ` +
+            'That origin cannot reach the robot API. Open http://localhost:8050';
+    } else {
+      msg = 'Backend unreachable on :8050. Start it with: cd dashboard/backend && python main.py, ' +
+            'then open http://localhost:8050';
+    }
+
+    if (this.modelDir) {
+      this.modelDir.innerHTML =
+        'Correct dashboard URL: <a href="http://localhost:8050" style="color: var(--accent-primary); font-weight: 700;">http://localhost:8050</a>';
+    }
+    this.showError(`${msg} (attempt ${attempt + 1}/4)`);
+    if (attempt < 3) {
+      setTimeout(() => this.bootstrapWithRetry(attempt + 1), 2500);
     }
   },
 
@@ -105,7 +144,7 @@ const OnnxPanel = {
   async manualOverride() {
     try {
       App.log('ONNX: MANUAL OVERRIDE pressed — halting model instantly...');
-      const res = await fetch('/api/onnx/override', { method: 'POST' });
+      const res = await fetch(this.api('/api/onnx/override'), { method: 'POST' });
       const data = await res.json();
       App.log(`ONNX: ${data.message || 'Override engaged.'}`);
       this.showError(null);
@@ -118,7 +157,7 @@ const OnnxPanel = {
   /* Model Card: pull architecture / dataset / metrics / contract */
   async loadModelInfo() {
     try {
-      const res = await fetch('/api/onnx/info', { cache: 'no-store' });
+      const res = await fetch(this.api('/api/onnx/info'), { cache: 'no-store' });
       if (!res.ok) return;
       const info = await res.json();
       if (this.infoName) this.infoName.textContent = info.model_name || '(no model loaded)';
@@ -145,7 +184,7 @@ const OnnxPanel = {
 
   async refreshModels() {
     try {
-      const res = await fetch('/api/onnx/models', { cache: 'no-store' });
+      const res = await fetch(this.api('/api/onnx/models'), { cache: 'no-store' });
       const data = await res.json();
       if (this.modelDir) {
         this.modelDir.textContent = `Model directory: ${data.model_dir} (${(data.models || []).length} model(s))`;
@@ -181,7 +220,7 @@ const OnnxPanel = {
 
   async fetchStatus() {
     try {
-      const res = await fetch('/api/onnx/status', { cache: 'no-store' });
+      const res = await fetch(this.api('/api/onnx/status'), { cache: 'no-store' });
       if (res.ok) this.handleStatus(await res.json());
     } catch (e) { /* offline UI mode */ }
   },
@@ -194,7 +233,7 @@ const OnnxPanel = {
     }
     try {
       App.log(`ONNX: Loading policy ${name}...`);
-      const res = await fetch('/api/onnx/load', {
+      const res = await fetch(this.api('/api/onnx/load'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: name })
@@ -221,7 +260,7 @@ const OnnxPanel = {
   async startAutonomous() {
     try {
       App.log('ONNX: Starting autonomous pick-and-place (30Hz closed loop)...');
-      const res = await fetch('/api/onnx/start', { method: 'POST' });
+      const res = await fetch(this.api('/api/onnx/start'), { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
         App.log(`ONNX: ${data.message}`);
@@ -237,7 +276,7 @@ const OnnxPanel = {
 
   async stopAutonomous() {
     try {
-      const res = await fetch('/api/onnx/stop', { method: 'POST' });
+      const res = await fetch(this.api('/api/onnx/stop'), { method: 'POST' });
       const data = await res.json();
       App.log(`ONNX: ${data.message || 'Autonomous mode stopped.'}`);
       this.fetchStatus();
@@ -313,7 +352,7 @@ const OnnxPanel = {
 // Fetch block pose at 2Hz for the panel display (independent of inference loop)
 setInterval(async () => {
   try {
-    const res = await fetch('/api/vision/status');
+    const res = await fetch(this.api('/api/vision/status'));
     if (!res.ok) return;
     const v = await res.json();
     const el = document.getElementById('onnxBlockPose');
