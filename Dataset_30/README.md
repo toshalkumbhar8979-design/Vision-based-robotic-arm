@@ -6,8 +6,8 @@
 | `datasets/episode_001..750.json` | Demonstrations: 30 real human DJT + 720 synthetic (same JSON style) |
 | `episodes_index.json` | Quick manifest of the 720 synthetic episodes (numbers 31-750) |
 | `master_dataset_all_episodes.npz` | All 549,424 transitions as arrays (obs 9-dim / act 6-dim) |
-| `models/imitation_policy_750ep.pth` | Trained PyTorch BC policy weights |
-| `models/imitation_policy_750ep.onnx` | ONNX policy for 30Hz RPi5 inference (raw obs in / raw action out) |
+| `models/pickyv1.pth` | Trained PyTorch BC policy weights |
+| `models/pickyv1.onnx` | ONNX policy for 30Hz RPi5 inference (raw obs in / raw action out) |
 | `generate_dataset.py` | Synthetic episode generator (seeded, idempotent style, re-runnable) |
 | `validate_dataset.py` | Full 750-episode validator (style, overlap, rates, ranges) |
 | `train_onnx.py` | End-to-end: load -> npz -> train -> .pth -> .onnx -> verify |
