@@ -18,7 +18,7 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.46',
+  UI_VERSION: 'v1.0.48',
   API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
@@ -114,6 +114,10 @@ const OnnxPanel = {
     this.btnStart = document.getElementById('btnOnnxStart');
     this.btnStop = document.getElementById('btnOnnxStop');
     this.btnOverride = document.getElementById('btnOnnxOverride');
+    this.btnModelCard = document.getElementById('btnOnnxModelCard');
+    this.btnStatusModelCard = document.getElementById('btnOnnxStatusModelCard');
+    this.modelCardModal = document.getElementById('onnxModelCardModal');
+    this.btnModelCardClose = document.getElementById('btnOnnxModelCardClose');
     this.infoName = document.getElementById('onnxInfoName');
     this.infoArch = document.getElementById('onnxInfoArch');
     this.infoDataset = document.getElementById('onnxInfoDataset');
@@ -138,6 +142,30 @@ const OnnxPanel = {
     if (this.btnStart) this.btnStart.addEventListener('click', () => this.startAutonomous());
     if (this.btnStop) this.btnStop.addEventListener('click', () => this.stopAutonomous());
     if (this.btnOverride) this.btnOverride.addEventListener('click', () => this.manualOverride());
+    if (this.btnModelCard) this.btnModelCard.addEventListener('click', () => this.openModelCard());
+    if (this.btnStatusModelCard) this.btnStatusModelCard.addEventListener('click', () => this.openModelCard());
+    if (this.btnModelCardClose) this.btnModelCardClose.addEventListener('click', () => this.closeModelCard());
+    if (this.modelCardModal) {
+      // Click on the dark backdrop closes; clicks inside the card do not.
+      this.modelCardModal.addEventListener('click', (e) => {
+        if (e.target === this.modelCardModal) this.closeModelCard();
+      });
+    }
+    // Esc closes the floating window
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') this.closeModelCard();
+    });
+  },
+
+  /* Floating Model Card window */
+  openModelCard() {
+    if (!this.modelCardModal) return;
+    this.modelCardModal.style.display = 'flex';
+    this.loadModelInfo();   // always fresh when opened
+  },
+
+  closeModelCard() {
+    if (this.modelCardModal) this.modelCardModal.style.display = 'none';
   },
 
   /* MANUAL OVERRIDE: instant take-control against erratic/AWOL policy behaviour */
@@ -154,30 +182,53 @@ const OnnxPanel = {
     }
   },
 
-  /* Model Card: pull architecture / dataset / metrics / contract */
+  /* Model Card: pull architecture / dataset / metrics / contract and render it neatly */
   async loadModelInfo() {
     try {
       const res = await fetch(this.api('/api/onnx/info'), { cache: 'no-store' });
       if (!res.ok) return;
       const info = await res.json();
+
       if (this.infoName) this.infoName.textContent = info.model_name || '(no model loaded)';
-      if (this.infoArch) this.infoArch.textContent = info.architecture || '—';
+
+      if (this.infoArch) {
+        this.infoArch.innerHTML =
+          `<div style="line-height: 1.7;">${info.architecture || '—'}</div>`;
+      }
+
       if (this.infoDataset) {
-        this.infoDataset.textContent =
-          `${info.dataset || '—'} | ${info.transitions || ''} | ${info.epochs || '?'} epochs`;
+        this.infoDataset.innerHTML =
+          `<div style="line-height: 1.7;">${info.dataset || '—'}</div>` +
+          `<div style="margin-top: 6px; color: var(--text-muted); line-height: 1.6;">` +
+          `${info.transitions || ''} · ${info.epochs ?? '?'} training epochs</div>`;
       }
+
       if (this.infoMetrics) {
-        this.infoMetrics.textContent =
-          `Joint MAE ${info.val_joint_mae_deg ?? '—'}° | Gripper acc ${info.gripper_accuracy || '—'}`;
+        const chip = (t) => `<span style="display: inline-block; background: var(--bg-card, #FFFDF9); ` +
+          `border: 1px solid var(--accent-success); border-radius: 999px; padding: 4px 14px; ` +
+          `color: var(--accent-success); font-weight: 700;">${t}</span>`;
+        this.infoMetrics.innerHTML =
+          chip(`Joint MAE ${info.val_joint_mae_deg ?? '—'}°`) +
+          chip(`Gripper accuracy ${info.gripper_accuracy || '—'}`);
       }
+
       if (this.infoContract) {
+        const tag = (t) => `<span style="color: var(--accent-primary); font-weight: 700;">${t}</span>`;
         this.infoContract.innerHTML =
-          `IN: ${info.obs_contract || '—'}<br>OUT: ${info.act_contract || '—'}`;
+          `<div style="line-height: 1.7;">${tag('IN&nbsp;&nbsp;→&nbsp;')} ${info.obs_contract || '—'}</div>` +
+          `<div style="line-height: 1.7; margin-top: 6px;">${tag('OUT&nbsp;→&nbsp;')} ${info.act_contract || '—'}</div>`;
       }
+
       if (this.infoFile) {
-        this.infoFile.textContent =
-          `${info.model_name} | ${info.file_size_kb ?? '?'} KB | exported ${info.exported || '—'} | ` +
-          `${info.framework || ''} | ${info.inference || ''} | Safety: ${info.safety || ''}`;
+        const kv = (k, v) => `<div style="line-height: 1.7;">` +
+          `<span style="color: var(--text-muted);">${k}</span> <span>${v}</span></div>`;
+        this.infoFile.innerHTML =
+          kv('File:', `${info.model_name} · ${info.file_size_kb ?? '?'} KB · exported ${info.exported || '—'}`) +
+          `<div style="margin-top: 6px; color: var(--text-muted); line-height: 1.6;">${info.framework || ''}</div>` +
+          `<div style="margin-top: 4px; color: var(--text-muted); line-height: 1.6;">${info.inference || ''}</div>` +
+          `<div style="margin-top: 8px; line-height: 1.6;">` +
+          `<span style="color: var(--accent-success); font-weight: 700;">Safety:</span> ` +
+          `<span>${info.safety || ''}</span></div>`;
       }
     } catch (e) { /* offline UI mode */ }
   },

@@ -701,6 +701,9 @@
                 <span class="status-dot"></span>
                 <span id="onnxStatusText">No model loaded</span>
               </div>
+              <button class="btn btn-secondary" id="btnOnnxStatusModelCard" title="Open Model Card" style="font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; cursor: pointer;">
+                &#128196; Model Card
+              </button>
               <span id="onnxUiVersion" style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 3px 8px;">UI v?</span>
             </div>
 
@@ -744,36 +747,46 @@
             <div id="onnxErrorBanner" style="display: none; margin-top: 14px; font-family: var(--font-mono); font-size: 0.8rem; color: #C62828; background: rgba(198,40,40,0.1); border: 1px solid rgba(198,40,40,0.35); padding: 8px 14px; border-radius: 8px;"></div>
           </div>
 
-          <!-- Card: Model Card (what this policy is) -->
-          <div class="card" style="grid-column: span 12;">
-            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-              <div>
-                <h3 class="card-title">Model Card</h3>
-                <p class="card-subtitle">Facts about the loaded policy — architecture, training data, validation metrics and I/O contract.</p>
+          <!-- Floating Model Card Window (hidden modal, opened from the header button) -->
+          <div id="onnxModelCardModal" style="display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(26, 24, 23, 0.55); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 24px;">
+            <div style="background: var(--bg-card, #FFFDF9); border: 1px solid var(--border-card); border-radius: 14px; box-shadow: 0 18px 50px rgba(26,24,23,0.35); width: min(760px, 96vw); max-height: 88vh; overflow-y: auto; padding: 22px 26px;">
+              <!-- Modal header -->
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px;">
+                <div>
+                  <h3 style="font-family: var(--font-heading); font-size: 1.25rem; color: var(--text-main); margin: 0 0 4px 0;">Model Card</h3>
+                  <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-primary); font-weight: 700;" id="onnxInfoName">(no model loaded)</div>
+                </div>
+                <button id="btnOnnxModelCardClose" title="Close" style="font-family: var(--font-mono); font-size: 0.9rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-muted); cursor: pointer; padding: 4px 10px;">&#10005;</button>
               </div>
-              <div style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-primary); font-weight: 600;" id="onnxInfoName">(no model loaded)</div>
-            </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; font-family: var(--font-mono); font-size: 0.78rem;">
-              <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
-                <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 4px;">ARCHITECTURE</div>
-                <div id="onnxInfoArch" style="color: var(--text-main);">—</div>
-              </div>
-              <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
-                <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 4px;">TRAINING DATASET</div>
-                <div id="onnxInfoDataset" style="color: var(--text-main);">—</div>
-              </div>
-              <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
-                <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 4px;">VALIDATION METRICS</div>
-                <div id="onnxInfoMetrics" style="color: var(--accent-success); font-weight: 600;">—</div>
-              </div>
-              <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
-                <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 4px;">I/O CONTRACT (RAW VALUES)</div>
-                <div id="onnxInfoContract" style="color: var(--text-main);">—</div>
-              </div>
-              <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px; grid-column: span 2;">
-                <div style="color: var(--text-muted); font-size: 0.68rem; margin-bottom: 4px;">FILE &amp; RUNTIME</div>
-                <div id="onnxInfoFile" style="color: var(--text-main);">—</div>
+              <!-- Modal body -->
+              <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 10px; font-family: var(--font-mono); font-size: 0.78rem;">
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
+                  <div style="color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.08em; margin-bottom: 6px;">ARCHITECTURE</div>
+                  <div id="onnxInfoArch" style="color: var(--text-main); line-height: 1.7; overflow-wrap: anywhere;">—</div>
+                </div>
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
+                  <div style="color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.08em; margin-bottom: 6px;">TRAINING DATASET</div>
+                  <div id="onnxInfoDataset" style="color: var(--text-main); line-height: 1.7; overflow-wrap: anywhere;">—</div>
+                </div>
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
+                  <div style="color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.08em; margin-bottom: 6px;">VALIDATION METRICS</div>
+                  <div id="onnxInfoMetrics" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">—</div>
+                </div>
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
+                  <div style="color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.08em; margin-bottom: 6px;">I/O CONTRACT (RAW VALUES)</div>
+                  <div id="onnxInfoContract" style="color: var(--text-main); line-height: 1.7; overflow-wrap: anywhere;">—</div>
+                </div>
+
+                <div style="background: var(--bg-page); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px;">
+                  <div style="color: var(--text-muted); font-size: 0.66rem; letter-spacing: 0.08em; margin-bottom: 6px;">FILE &amp; RUNTIME</div>
+                  <div id="onnxInfoFile" style="color: var(--text-main); line-height: 1.7; overflow-wrap: anywhere;">—</div>
+                </div>
+
               </div>
             </div>
           </div>
@@ -841,6 +854,6 @@
   <script src="js/servo_panel.js?v=1.0.42"></script>
   <script src="js/teleop_panel.js?v=1.0.42"></script>
   <script src="js/dataset_panel.js?v=1.0.43"></script>
-  <script src="js/onnx_panel.js?v=1.0.46"></script>
+  <script src="js/onnx_panel.js?v=1.0.48"></script>
 </body>
 </html>
