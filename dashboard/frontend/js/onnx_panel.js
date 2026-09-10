@@ -18,7 +18,7 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.48',
+  UI_VERSION: 'v1.0.50',
   API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
@@ -116,6 +116,12 @@ const OnnxPanel = {
     this.btnOverride = document.getElementById('btnOnnxOverride');
     this.btnModelCard = document.getElementById('btnOnnxModelCard');
     this.btnStatusModelCard = document.getElementById('btnOnnxStatusModelCard');
+    this.btnModelGraph = document.getElementById('btnOnnxModelGraph');
+    this.graphModal = document.getElementById('onnxModelGraphModal');
+    this.btnGraphClose = document.getElementById('btnOnnxGraphClose');
+    this.graphFrame = document.getElementById('onnxGraphFrame');
+    this.graphNewTab = document.getElementById('onnxGraphNewTab');
+    this.graphModelName = document.getElementById('onnxGraphModelName');
     this.modelCardModal = document.getElementById('onnxModelCardModal');
     this.btnModelCardClose = document.getElementById('btnOnnxModelCardClose');
     this.infoName = document.getElementById('onnxInfoName');
@@ -144,6 +150,7 @@ const OnnxPanel = {
     if (this.btnOverride) this.btnOverride.addEventListener('click', () => this.manualOverride());
     if (this.btnModelCard) this.btnModelCard.addEventListener('click', () => this.openModelCard());
     if (this.btnStatusModelCard) this.btnStatusModelCard.addEventListener('click', () => this.openModelCard());
+    if (this.btnModelGraph) this.btnModelGraph.addEventListener('click', () => this.openModelGraph());
     if (this.btnModelCardClose) this.btnModelCardClose.addEventListener('click', () => this.closeModelCard());
     if (this.modelCardModal) {
       // Click on the dark backdrop closes; clicks inside the card do not.
@@ -153,8 +160,37 @@ const OnnxPanel = {
     }
     // Esc closes the floating window
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') this.closeModelCard();
+      if (e.key === 'Escape') { this.closeModelCard(); this.closeModelGraph(); }
     });
+  },
+
+  /* Floating Model Graph window with embedded Netron viewer */
+  openModelGraph() {
+    if (!this.graphModal) return;
+    // Prefer the dropdown selection; fall back to the loaded model name.
+    let name = this.modelSelect ? this.modelSelect.value : '';
+    if (!name && this.statusText) {
+      const m = this.statusText.textContent.match(/:\s*(\S+\.onnx)/);
+      if (m) name = m[1];
+    }
+    if (!name) {
+      const msg = 'No model selected — load a model first, then open Model Graph.';
+      App.log(`ONNX: ${msg}`);
+      this.showError(msg);
+      return;
+    }
+    const fileUrl = this.api(`/api/onnx/model-file/${encodeURIComponent(name)}`);
+    const netronUrl = `https://netron.app/?url=${encodeURIComponent(fileUrl)}`;
+    if (this.graphModelName) this.graphModelName.textContent = name;
+    if (this.graphNewTab) this.graphNewTab.href = netronUrl;
+    if (this.graphFrame) this.graphFrame.src = netronUrl;
+    this.graphModal.style.display = 'flex';
+    App.log(`ONNX: Loading ${name} into the Netron model graph viewer...`);
+  },
+
+  closeModelGraph() {
+    if (this.graphModal) this.graphModal.style.display = 'none';
+    if (this.graphFrame) this.graphFrame.src = 'about:blank';  // stop the viewer
   },
 
   /* Floating Model Card window */

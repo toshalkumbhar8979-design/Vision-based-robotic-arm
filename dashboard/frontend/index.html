@@ -693,18 +693,23 @@
           <!-- Card: ONNX Model Management -->
           <div class="card" style="grid-column: span 12;">
             <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
-              <div>
+              <div style="flex: 1 1 480px; min-width: 0;">
                 <h3 class="card-title">ONNX Autonomous Policy — Pick &amp; Place</h3>
                 <p class="card-subtitle">Behaviour Cloning policy trained on 750 demonstrations (30 real human DJT + 720 synthetic). Runs a 30Hz closed loop: Camera ArUco block pose &rarr; ONNX inference &rarr; EMA-smoothed joint commands.</p>
               </div>
-              <div class="status-pill" id="onnxStatusPill">
-                <span class="status-dot"></span>
-                <span id="onnxStatusText">No model loaded</span>
+              <div style="display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px; flex: 0 0 auto;">
+                <div class="status-pill" id="onnxStatusPill" style="margin: 0;">
+                  <span class="status-dot"></span>
+                  <span id="onnxStatusText">No model loaded</span>
+                </div>
+                <button class="btn btn-primary" id="btnOnnxStatusModelCard" title="Open Model Card (floating window)" style="font-weight: 700; padding: 8px 16px; font-size: 0.8rem; cursor: pointer; white-space: nowrap;">
+                  &#128196; Model Card
+                </button>
+                <button class="btn btn-primary" id="btnOnnxModelGraph" title="Open pickyv1.onnx in Netron (model graph viewer)" style="font-weight: 700; padding: 8px 16px; font-size: 0.8rem; cursor: pointer; white-space: nowrap;">
+                  &#128202; Model Graph
+                </button>
+                <span id="onnxUiVersion" style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 3px 8px; align-self: center;">UI v?</span>
               </div>
-              <button class="btn btn-secondary" id="btnOnnxStatusModelCard" title="Open Model Card" style="font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; cursor: pointer;">
-                &#128196; Model Card
-              </button>
-              <span id="onnxUiVersion" style="font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 3px 8px;">UI v?</span>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-top: 20px; align-items: center;">
@@ -715,6 +720,25 @@
               <button class="btn btn-secondary" id="btnOnnxRefresh">Refresh</button>
             </div>
             <div style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); margin-top: 8px;" id="onnxModelDir">Model directory: checking...</div>
+          </div>
+
+          <!-- Floating Model Graph Window (Netron embedded; opened by btnOnnxModelGraph) -->
+          <div id="onnxModelGraphModal" style="display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(26, 24, 23, 0.55); backdrop-filter: blur(3px); align-items: center; justify-content: center; padding: 24px;">
+            <div style="background: var(--bg-card, #FFFDF9); border: 1px solid var(--border-card); border-radius: 14px; box-shadow: 0 18px 50px rgba(26,24,23,0.35); width: min(1150px, 96vw); height: 88vh; display: flex; flex-direction: column; overflow: hidden;">
+              <!-- Modal header -->
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid var(--border-subtle); padding: 14px 20px; flex: 0 0 auto;">
+                <div>
+                  <h3 style="font-family: var(--font-heading); font-size: 1.2rem; color: var(--text-main); margin: 0 0 2px 0;">Model Graph — <span id="onnxGraphModelName">pickyv1.onnx</span></h3>
+                  <div style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted);">Rendered with Netron · the viewer fetches pickyv1.onnx from the backend</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <a id="onnxGraphNewTab" href="#" target="_blank" rel="noopener" class="btn btn-secondary" style="font-family: var(--font-mono); font-size: 0.72rem; font-weight: 700; padding: 6px 12px; text-decoration: none; cursor: pointer;">&#8599; Open in new tab</a>
+                  <button id="btnOnnxGraphClose" title="Close" style="font-family: var(--font-mono); font-size: 0.9rem; background: transparent; border: 1px solid var(--border-subtle); border-radius: 8px; color: var(--text-muted); cursor: pointer; padding: 4px 10px;">&#10005;</button>
+                </div>
+              </div>
+              <!-- Netron viewer -->
+              <iframe id="onnxGraphFrame" style="flex: 1 1 auto; width: 100%; border: 0; background: #FFFFFF;" title="Netron model graph"></iframe>
+            </div>
           </div>
 
           <!-- Card: Autonomous Control -->
@@ -854,6 +878,6 @@
   <script src="js/servo_panel.js?v=1.0.42"></script>
   <script src="js/teleop_panel.js?v=1.0.42"></script>
   <script src="js/dataset_panel.js?v=1.0.43"></script>
-  <script src="js/onnx_panel.js?v=1.0.48"></script>
+  <script src="js/onnx_panel.js?v=1.0.50"></script>
 </body>
 </html>

@@ -38,7 +38,7 @@ import urllib.request
 import urllib.error
 from typing import List, Dict, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, UploadFile, File
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -447,6 +447,20 @@ async def stop_onnx_autonomous():
 async def get_onnx_status():
     """Snapshot of the ONNX autonomous engine (for the dashboard panel)."""
     return autonomous_manager.get_status()
+
+
+@app.get("/api/onnx/model-file/{filename}")
+async def get_onnx_model_file(filename: str):
+    """Serves the raw .onnx file so external tools (Netron model-graph viewer)
+    can fetch it directly: https://netron.app/?url=<this endpoint>."""
+    safe = os.path.basename(filename)
+    if not safe.endswith(".onnx"):
+        raise HTTPException(status_code=400, detail="Only .onnx files can be served.")
+    path = os.path.abspath(os.path.join(MODEL_DIR, safe))
+    if not path.startswith(os.path.abspath(MODEL_DIR)) or not os.path.exists(path):
+        available = [m["name"] for m in autonomous_manager.list_models()]
+        raise HTTPException(status_code=404, detail=f"Model '{safe}' not found. Available: {available}")
+    return FileResponse(path, media_type="application/octet-stream", filename=safe)
 
 
 @app.get("/api/onnx/info")
