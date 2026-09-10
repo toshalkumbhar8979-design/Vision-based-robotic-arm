@@ -18,7 +18,7 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.50',
+  UI_VERSION: 'v1.0.51',
   API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
@@ -151,6 +151,13 @@ const OnnxPanel = {
     if (this.btnModelCard) this.btnModelCard.addEventListener('click', () => this.openModelCard());
     if (this.btnStatusModelCard) this.btnStatusModelCard.addEventListener('click', () => this.openModelCard());
     if (this.btnModelGraph) this.btnModelGraph.addEventListener('click', () => this.openModelGraph());
+    if (this.btnGraphClose) this.btnGraphClose.addEventListener('click', () => this.closeModelGraph());
+    if (this.graphModal) {
+      // Click on the dark backdrop closes; clicks inside the window do not.
+      this.graphModal.addEventListener('click', (e) => {
+        if (e.target === this.graphModal) this.closeModelGraph();
+      });
+    }
     if (this.btnModelCardClose) this.btnModelCardClose.addEventListener('click', () => this.closeModelCard());
     if (this.modelCardModal) {
       // Click on the dark backdrop closes; clicks inside the card do not.

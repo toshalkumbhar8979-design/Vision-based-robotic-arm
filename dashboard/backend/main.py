@@ -97,17 +97,31 @@ async def upload_media_file(file: UploadFile = File(...)):
         "url": public_url
     }
 
-# Allow CORS for development
+# Allow CORS for development (allow_private_network lets HTTPS sites such as
+# netron.app fetch the model file from this private localhost server — without
+# it Chrome blocks the request and Netron shows "The web request failed")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_private_network=True,
 )
 
 # Track active WebSocket connections
 active_connections: List[WebSocket] = []
+
+
+@app.middleware("http")
+async def private_network_access_header(request, call_next):
+    """Allows HTTPS sites (netron.app) to fetch the model file from this
+    PRIVATE localhost server. Chrome's Private Network Access sends a preflight
+    with 'Access-Control-Request-Private-Network: true' and requires this
+    response header, otherwise it blocks the request ("The web request failed")."""
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Private-Network"] = "true"
+    return response
 
 
 @app.on_event("startup")
