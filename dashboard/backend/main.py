@@ -421,6 +421,10 @@ class OnnxLoadRequest(BaseModel):
     model: str
 
 
+class GraphServerRequest(BaseModel):
+    model: str
+
+
 @app.get("/api/onnx/models")
 async def list_onnx_models():
     """Lists available trained ONNX policies in Dataset_30/models."""
@@ -455,6 +459,43 @@ async def stop_onnx_autonomous():
     success, msg = await autonomous_manager.stop()
     await broadcast_status()
     return {"status": "success", "message": msg}
+
+
+@app.post("/api/onnx/graph/start")
+async def start_onnx_graph_server(req: GraphServerRequest):
+    """Starts (or re-targets) the LOCAL Netron viewer server on localhost:8088
+    for the selected model, waits until it responds, and returns the iframe URL.
+    Running Netron locally avoids all browser cross-origin/private-network
+    restrictions that break the hosted netron.app inside an iframe."""
+    import socket
+    import netron  # lazy import: only needed when the graph viewer is used
+
+    safe = os.path.basename(req.model)
+    if not safe.endswith(".onnx"):
+        raise HTTPException(status_code=400, detail="Only .onnx files can be graphed.")
+    path = os.path.abspath(os.path.join(MODEL_DIR, safe))
+    if not path.startswith(os.path.abspath(MODEL_DIR)) or not os.path.exists(path):
+        available = [m["name"] for m in autonomous_manager.list_models()]
+        raise HTTPException(status_code=404, detail=f"Model '{safe}' not found. Available: {available}")
+
+    address = ("localhost", 8088)
+    try:
+        # Runs the viewer server in a background thread; if it is already
+        # running, netron re-targets it to the new file automatically.
+        await asyncio.to_thread(netron.start, path, address, False)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Netron viewer failed to start: {e}")
+
+    # Wait until the viewer accepts connections before handing the URL to the UI
+    for _ in range(60):
+        try:
+            with socket.create_connection((address[0], address[1]), timeout=0.2):
+                break
+        except OSError:
+            await asyncio.sleep(0.1)
+    else:
+        raise HTTPException(status_code=504, detail="Netron viewer did not start in time.")
+    return {"status": "success", "url": f"http://{address[0]}:{address[1]}/", "model": safe}
 
 
 @app.get("/api/onnx/status")

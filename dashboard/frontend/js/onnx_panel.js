@@ -18,7 +18,7 @@
    ========================================================================== */
 
 const OnnxPanel = {
-  UI_VERSION: 'v1.0.51',
+  UI_VERSION: 'v1.0.52',
   API_BASE: '',   // '' = same origin; auto-detected fallback lives here
 
   init() {
@@ -171,8 +171,8 @@ const OnnxPanel = {
     });
   },
 
-  /* Floating Model Graph window with embedded Netron viewer */
-  openModelGraph() {
+  /* Floating Model Graph window with the LOCAL Netron viewer (no cross-origin fetches) */
+  async openModelGraph() {
     if (!this.graphModal) return;
     // Prefer the dropdown selection; fall back to the loaded model name.
     let name = this.modelSelect ? this.modelSelect.value : '';
@@ -186,13 +186,30 @@ const OnnxPanel = {
       this.showError(msg);
       return;
     }
-    const fileUrl = this.api(`/api/onnx/model-file/${encodeURIComponent(name)}`);
-    const netronUrl = `https://netron.app/?url=${encodeURIComponent(fileUrl)}`;
     if (this.graphModelName) this.graphModelName.textContent = name;
-    if (this.graphNewTab) this.graphNewTab.href = netronUrl;
-    if (this.graphFrame) this.graphFrame.src = netronUrl;
+    // Show the window immediately with a loading hint, then boot the viewer.
     this.graphModal.style.display = 'flex';
-    App.log(`ONNX: Loading ${name} into the Netron model graph viewer...`);
+    if (this.graphFrame) this.graphFrame.srcdoc =
+      '<div style="font-family: monospace; padding: 24px; color: #555;">Starting the local Netron viewer for ' +
+      name + ' …</div>';
+    try {
+      const res = await fetch(this.api('/api/onnx/graph/start'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: name })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        this.showError(data.detail || `Graph viewer failed (HTTP ${res.status})`);
+        return;
+      }
+      this.showError(null);
+      if (this.graphFrame) this.graphFrame.src = data.url;   // http://localhost:8088
+      if (this.graphNewTab) this.graphNewTab.href = data.url;
+      App.log(`ONNX: Model Graph ready for ${name} (local Netron viewer).`);
+    } catch (e) {
+      this.showError(`Could not start the local graph viewer: ${e.message}`);
+    }
   },
 
   closeModelGraph() {
